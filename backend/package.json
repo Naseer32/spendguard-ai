@@ -1,0 +1,13 @@
+{
+  "name": "spendguard-backend",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "SpendGuard AI backend: deterministic spending policy engine for autonomous agents on NEAR",
+  "engines": {
+    "node": ">=24.15.0"
+  },
+  "scripts": {
+    "test": "node --test \"src/**/*.test.js\""
+  }
+}
