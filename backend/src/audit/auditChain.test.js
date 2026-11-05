@@ -219,13 +219,13 @@ describeBackends('audit chain', (ctx) => {
       { ...ok, payload: { big: 10n } }, { ...ok, payload: circular },
       { ...ok, payload: { d: new Date() } },
     ];
-    for (const input of bad) {
+        bad.forEach((input, i) => {
       assert.throws(
         () => withWriteTransaction(db, () => appendAudit(db, input)),
         (e) => e instanceof AuditError,
-        JSON.stringify(input),
+        `bad entry #${i}`,
       );
-    }
+    });
     assert.equal(count(db, 'audit_log'), 0);
   });
 
