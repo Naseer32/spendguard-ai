@@ -192,7 +192,7 @@ describeBackends('reservations', (ctx) => {
     const { db, agentId } = setup();
     const requestId = reserve(db, agentId, '7');
     for (const reason of ['', 5, null, undefined, 'x'.repeat(101)]) {
-      assert.throws(() => release(db, requestId, reason), ValidationError, String(reason));
+      assert.throws(() => withWriteTransaction(db, () => releaseReservation(db, requestId, reason, LATER)), ValidationError, String(reason));
     }
     assert.equal(getReservation(db, requestId).status, 'ACTIVE');
   });
