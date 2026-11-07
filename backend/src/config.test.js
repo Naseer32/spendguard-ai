@@ -116,7 +116,7 @@ describe('OWNER_TOKEN', () => {
 
   it('accepts exactly 32 to 256 printable characters', () => {
     assert.doesNotThrow(() => loadConfig(env({ OWNER_TOKEN: 'a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6' })));
-    assert.doesNotThrow(() => loadConfig(env({ OWNER_TOKEN: 'k9'.repeat(128) })));
+    assert.doesNotThrow(() => loadConfig(env({ OWNER_TOKEN: 'a1b2c3d4'.repeat(32) })));
     assert.doesNotThrow(() => loadConfig(env({ OWNER_TOKEN: '!@#$%^&*()_+-=abcdefgh0123456789XYZ' })));
   });
 
