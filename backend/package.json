@@ -9,5 +9,8 @@
   },
   "scripts": {
     "test": "node --test \"src/**/*.test.js\""
+  },
+  "dependencies": {
+    "express": "5.3.0"
   }
 }
