@@ -106,6 +106,17 @@ export function rejectPlainOptions() {
   };
 }
 
+// Only UTF-8 is accepted, as JSON requires. Any other charset, or an empty one, is refused.
+const CHARSET_PARAM_RE = /;\s*charset\s*=\s*(?:"([^"]*)"|([^;\s]*))/i;
+
+function hasNonUtf8Charset(contentType) {
+  const match = CHARSET_PARAM_RE.exec(contentType);
+  if (match === null) {
+    return false;
+  }
+  return (match[1] ?? match[2]).toLowerCase() !== 'utf-8';
+}
+
 function hasBody(req) {
   const length = req.headers['content-length'];
   return req.headers['transfer-encoding'] !== undefined || (length !== undefined && length !== '0');
@@ -114,7 +125,7 @@ function hasBody(req) {
 // A request that carries a body must be JSON.
 export function requireJsonContentType() {
   return (req, res, next) => {
-    if (hasBody(req) && !req.is('application/json')) {
+    if (hasBody(req) && (!req.is('application/json') || hasNonUtf8Charset(req.headers['content-type']))) {
       next(new UnsupportedMediaTypeError());
       return;
     }
