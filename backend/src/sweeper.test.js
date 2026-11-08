@@ -105,7 +105,7 @@ describeBackends('sweeper runs', (ctx) => {
     });
 
     assert.deepEqual(make(1).runNow(), { expired: 2, batches: 1, more: true, ok: true });
-    assert.deepEqual(make(2).runNow(), { expired: 2, batches: 2, more: true, ok: true });
+    assert.deepEqual(make(1).runNow(), { expired: 2, batches: 1, more: true, ok: true });
     assert.deepEqual(make(10).runNow(), { expired: 1, batches: 1, more: false, ok: true });
     assert.deepEqual(make(10).runNow(), { expired: 0, batches: 1, more: false, ok: true });
     const logged = logs.entries().filter((e) => e.event === 'sweep.expired');

@@ -92,7 +92,8 @@ describe('starting and stopping', () => {
     assert.equal(started.port, running.port);
     assert.equal(started.dbPath, ':memory:');
     assert.deepEqual(started.corsOrigins, ['https://app.example.com']);
-    assert.equal(started.settings.authorizationWindowMs, 3_600_000);
+    assert.equal(started.settings.authWindowMs, 3_600_000);
+    assert.equal(started.settings.approvalWindowMs, 86_400_000);
     assert.ok(started.routes >= 20);
     assert.ok(!logs.text().includes(OWNER_TOKEN));
     assert.ok(!logs.text().includes(config.ownerTokenHash));

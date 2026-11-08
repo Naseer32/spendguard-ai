@@ -85,7 +85,11 @@ export async function startServer({
     port,
     dbPath: config.dbPath,
     corsOrigins: [...config.corsOrigins],
-    settings: { ...config.settings },
+    // named authWindowMs on purpose: the logger redacts any key containing 'authorization'
+    settings: {
+      approvalWindowMs: config.settings.approvalWindowMs,
+      authWindowMs: config.settings.authorizationWindowMs,
+    },
     rateLimits: { ...config.rateLimits },
     sweepIntervalMs: config.sweepIntervalMs,
     routes: routes.length,
