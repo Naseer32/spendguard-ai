@@ -24,12 +24,14 @@ SpendGuard authorizes payments, and the owner signs the actual NEAR Testnet tran
 
 | Stage | Scope | State |
 |---|---|---|
-| 1 | Policy engine, money math, lifecycle state machine, CI | in progress |
-| 2 | Database, reservations, audit chain, API | planned |
-| 3 | NEAR RPC transaction verification | planned |
-| 4 | Mobile-first dashboard and wallet signing | planned |
-| 5 | AI explainer (NEAR AI Cloud) | planned |
-| 6 | Hardening and demo | planned |
+| 1 | Policy engine, money math, lifecycle state machine, CI | Complete |
+| 2 | Database, reservations, audit chain, API | Complete |
+| 3a | NEAR RPC configuration, safe RPC client, inspect-tx script, fake-RPC tests, real Testnet transaction inspection | In progress |
+| 3b | NEAR transaction verifier and fixture-based tests | Planned |
+| 3c | Transaction reporting endpoints and lifecycle transitions | Planned |
+| 4 | Mobile-first dashboard and wallet signing | Planned |
+| 5 | AI explainer (NEAR AI Cloud) | Planned |
+| 6 | Hardening and demo | Planned |
 
 ## Requirements
 
