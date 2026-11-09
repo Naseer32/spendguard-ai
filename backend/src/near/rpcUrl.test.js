@@ -19,7 +19,7 @@ describe('parseRpcUrl', () => {
     const bad = [
       'http://rpc.testnet.near.org', 'http://127.0.0.1:3000', 'ftp://rpc.example.com',
       'file:///etc/passwd', 'javascript:alert(1)', 'ws://rpc.example.com', 'rpc.example.com',
-      '//rpc.example.com', '', ' ', 'not a url', 'https://', 'https:///path',
+      '//rpc.example.com', '', ' ', 'not a url', 'https://', 'https:///path', 'https:\\\\rpc.example.com', 'https:/rpc.example.com',
       ' https://rpc.example.com', 'https://rpc.example.com ', 'https://rpc .example.com',
       `https://${'a'.repeat(2050)}.com`, undefined, null, 5, {}, [],
     ];

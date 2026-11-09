@@ -6,6 +6,7 @@
 
 import { isIP } from 'node:net';
 import { hashOwnerToken } from './http/ownerAuth.js';
+import { describeNearConfig, readNearConfig } from './near/nearConfig.js';
 
 export class ConfigError extends Error {
   constructor(problems) {
@@ -183,6 +184,7 @@ export function loadConfig(env = process.env) {
     env, 'RATE_LIMIT_OWNER_PER_MINUTE', { ...rateBounds, fallback: 300 }, problems,
   );
   const logLevel = readLogLevel(env, problems);
+  const near = readNearConfig(env, problems);
 
   if (problems.length > 0) {
     throw new ConfigError(problems);
@@ -199,6 +201,7 @@ export function loadConfig(env = process.env) {
     bodyLimitBytes: BODY_LIMIT_BYTES,
     sweepIntervalMs,
     logLevel,
+    near,
   });
 }
 
@@ -215,5 +218,6 @@ export function describeConfig(config) {
     bodyLimitBytes: config.bodyLimitBytes,
     sweepIntervalMs: config.sweepIntervalMs,
     logLevel: config.logLevel,
+    near: describeNearConfig(config.near),
   };
 }

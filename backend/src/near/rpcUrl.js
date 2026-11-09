@@ -12,6 +12,9 @@ export function parseRpcUrl(value, { allowLoopbackHttp = false } = {}) {
   if (typeof value !== 'string' || value.length < 1 || value.length > MAX_URL_LENGTH || /\s/.test(value)) {
     throw new TypeError('invalid RPC URL');
   }
+  if (!/^https?:\/\/[^/\\]/i.test(value)) {
+    throw new TypeError('invalid RPC URL');
+  }
   let url;
   try {
     url = new URL(value);

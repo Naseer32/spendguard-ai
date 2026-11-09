@@ -48,7 +48,7 @@ describe('defaults', () => {
     assert.ok(Object.isFrozen(c.rateLimits));
     assert.ok(!JSON.stringify(c).includes(TOKEN));
     assert.deepEqual(Object.keys(c).sort(), [
-      'bodyLimitBytes', 'corsOrigins', 'dbPath', 'host', 'logLevel', 'ownerTokenHash',
+      'bodyLimitBytes', 'corsOrigins', 'dbPath', 'host', 'logLevel', 'near', 'ownerTokenHash',
       'port', 'rateLimits', 'settings', 'sweepIntervalMs',
     ]);
   });
