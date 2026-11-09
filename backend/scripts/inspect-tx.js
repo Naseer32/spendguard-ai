@@ -9,11 +9,22 @@ import {
   FIXTURE_DIR,
   USAGE,
   UsageError,
+  buildBlockParams,
   buildTxParams,
   fixtureUrl,
   parseInspectArgs,
   shapeLines,
 } from '../src/near/inspect.js';
+
+function fetchResult(client, args) {
+  if (args.command === 'status') {
+    return client.call('status', []);
+  }
+  if (args.command === 'block') {
+    return client.call('block', buildBlockParams(args.blockHash));
+  }
+  return client.call(args.method, buildTxParams(args.params, args.txHash, args.sender));
+}
 
 async function main() {
   let args;
@@ -40,10 +51,7 @@ async function main() {
 
   let result;
   try {
-    result =
-      args.command === 'status'
-        ? await client.call('status', [])
-        : await client.call(args.method, buildTxParams(args.params, args.txHash, args.sender));
+    result = await fetchResult(client, args);
   } catch (error) {
     if (error instanceof RpcError) {
       console.error(`${error.name}: ${error.message}`);
@@ -51,7 +59,7 @@ async function main() {
       if (error.reason !== undefined) console.error(`reason: ${error.reason}`);
       if (error.detail !== undefined) console.error(`detail: ${error.detail}`);
       if (error.remote) console.error(`remote error: ${error.remote}`);
-      if (error instanceof RpcError && args.command === 'tx') {
+      if (args.command === 'tx') {
         console.error('hint: try --params array, or --method EXPERIMENTAL_tx_status');
       }
       process.exitCode = 1;
@@ -62,9 +70,18 @@ async function main() {
 
   console.log(shapeLines(result).join('\n'));
 
-  if (args.command === 'tx' && args.save !== null) {
+  if (args.save !== null) {
     fs.mkdirSync(FIXTURE_DIR, { recursive: true });
-    fs.writeFileSync(fixtureUrl(args.save), `${JSON.stringify(result, null, 2)}\n`, { flag: 'wx' });
+    try {
+      fs.writeFileSync(fixtureUrl(args.save), `${JSON.stringify(result, null, 2)}\n`, { flag: 'wx' });
+    } catch (error) {
+      if (error.code === 'EEXIST') {
+        console.error(`not saved: src/near/fixtures/${args.save} already exists (delete it or pick another name)`);
+        process.exitCode = 1;
+        return;
+      }
+      throw error;
+    }
     console.log(`saved the raw response to src/near/fixtures/${args.save}`);
   }
 }
