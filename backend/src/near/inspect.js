@@ -13,6 +13,7 @@ export const USAGE = [
   '  npm run inspect-tx -- status',
   '  npm run inspect-tx -- tx <txHash> <senderAccountId> [--method tx|EXPERIMENTAL_tx_status]',
   '                          [--params object|array] [--save name.json]',
+  '  npm run inspect-tx -- block <blockHash> [--save name.json]',
   '',
   'Prints the shape of the RPC response (field paths, types, short values).',
   '--save writes the raw response to src/near/fixtures/<name>.json (public chain data only).',
@@ -26,27 +27,12 @@ export class UsageError extends Error {
   }
 }
 
-const TX_HASH_RE = /^[1-9A-HJ-NP-Za-km-z]{32,64}$/;
+const HASH_RE = /^[1-9A-HJ-NP-Za-km-z]{32,64}$/;
 const FILE_RE = /^[A-Za-z0-9][A-Za-z0-9._-]{0,63}\.json$/;
 const METHODS = ['tx', 'EXPERIMENTAL_tx_status'];
 const STYLES = ['object', 'array'];
-const FLAGS = ['method', 'params', 'save'];
 
-export function parseInspectArgs(argv) {
-  if (!Array.isArray(argv) || argv.some((item) => typeof item !== 'string')) {
-    throw new TypeError('argv must be an array of strings');
-  }
-  const [command, ...rest] = argv;
-  if (command === 'status') {
-    if (rest.length > 0) {
-      throw new UsageError('status takes no arguments');
-    }
-    return Object.freeze({ command: 'status' });
-  }
-  if (command !== 'tx') {
-    throw new UsageError('the first argument must be status or tx');
-  }
-
+function splitArgs(rest, allowedFlags) {
   const positional = [];
   const flags = {};
   for (let i = 0; i < rest.length; i += 1) {
@@ -56,7 +42,7 @@ export function parseInspectArgs(argv) {
       continue;
     }
     const name = item.slice(2);
-    if (!FLAGS.includes(name)) {
+    if (!allowedFlags.includes(name)) {
       throw new UsageError('unknown option');
     }
     if (Object.hasOwn(flags, name)) {
@@ -69,11 +55,49 @@ export function parseInspectArgs(argv) {
     flags[name] = value;
     i += 1;
   }
+  return { positional, flags };
+}
+
+function checkSave(save) {
+  if (save !== undefined && !FILE_RE.test(save)) {
+    throw new UsageError('save must be a plain file name ending in .json');
+  }
+}
+
+export function parseInspectArgs(argv) {
+  if (!Array.isArray(argv) || argv.some((item) => typeof item !== 'string')) {
+    throw new TypeError('argv must be an array of strings');
+  }
+  const [command, ...rest] = argv;
+
+  if (command === 'status') {
+    if (rest.length > 0) {
+      throw new UsageError('status takes no arguments');
+    }
+    return Object.freeze({ command: 'status' });
+  }
+
+  if (command === 'block') {
+    const { positional, flags } = splitArgs(rest, ['save']);
+    if (positional.length !== 1) {
+      throw new UsageError('block needs exactly one block hash');
+    }
+    if (!HASH_RE.test(positional[0])) {
+      throw new UsageError('the block hash is not valid base58');
+    }
+    checkSave(flags.save);
+    return Object.freeze({ command: 'block', blockHash: positional[0], save: flags.save ?? null });
+  }
+
+  if (command !== 'tx') {
+    throw new UsageError('the first argument must be status, tx or block');
+  }
+  const { positional, flags } = splitArgs(rest, ['method', 'params', 'save']);
   if (positional.length !== 2) {
     throw new UsageError('tx needs a transaction hash and a sender account');
   }
   const [txHash, sender] = positional;
-  if (!TX_HASH_RE.test(txHash)) {
+  if (!HASH_RE.test(txHash)) {
     throw new UsageError('the transaction hash is not valid base58');
   }
   if (!isValidNearAccountId(sender)) {
@@ -87,9 +111,7 @@ export function parseInspectArgs(argv) {
   if (!STYLES.includes(params)) {
     throw new UsageError('params must be object or array');
   }
-  if (flags.save !== undefined && !FILE_RE.test(flags.save)) {
-    throw new UsageError('save must be a plain file name ending in .json');
-  }
+  checkSave(flags.save);
   return Object.freeze({ command: 'tx', txHash, sender, method, params, save: flags.save ?? null });
 }
 
@@ -100,6 +122,11 @@ export function buildTxParams(style, txHash, sender) {
     return [txHash, sender];
   }
   return { tx_hash: txHash, sender_account_id: sender, wait_until: WAIT_UNTIL };
+}
+
+// Looks a block up by its hash.
+export function buildBlockParams(blockHash) {
+  return { block_id: blockHash };
 }
 
 export function fixtureUrl(name) {
