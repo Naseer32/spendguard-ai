@@ -16,6 +16,7 @@ import {
   REVERSE_TX_HASH,
   SOURCE_ACCOUNT,
   SUCCESS_BLOCK_HASH,
+  SUCCESS_RECEIPT_ID,
   SUCCESS_TX_HASH,
   loadFixture,
   readFixtureText,
@@ -122,5 +123,62 @@ describe('the block (time of inclusion)', () => {
     assert.equal(Number.isSafeInteger(header.timestamp), false);
     assert.notEqual(String(header.timestamp), header.timestamp_nanosec);
     assert.equal(header.timestamp, Number(header.timestamp_nanosec));
+  });
+});
+
+describe('the successful transfer (transaction lookup with receipts)', () => {
+  const result = loadFixture(FIXTURE_FILES.successReceipts);
+  const plain = loadFixture(FIXTURE_FILES.success);
+
+  it('has the same fields as the plain lookup plus "receipts"', () => {
+    assert.deepEqual(Object.keys(result).sort(), [
+      'final_execution_status', 'receipts', 'receipts_outcome', 'status', 'transaction', 'transaction_outcome',
+    ]);
+  });
+
+  it('describes the same transaction and outcomes as the plain lookup', () => {
+    assert.equal(result.transaction.hash, SUCCESS_TX_HASH);
+    assert.deepEqual(result.transaction, plain.transaction);
+    assert.deepEqual(result.receipts_outcome, plain.receipts_outcome);
+    assert.deepEqual(result.status, SUCCESS);
+    assert.equal(result.final_execution_status, 'FINAL');
+  });
+
+  it('hands off from the transaction to the transfer receipt, which hands off to the refund', () => {
+    assert.deepEqual(result.transaction_outcome.outcome.status, { SuccessReceiptId: SUCCESS_RECEIPT_ID });
+    assert.deepEqual(result.transaction_outcome.outcome.receipt_ids, [SUCCESS_RECEIPT_ID]);
+    const first = result.receipts_outcome.find((r) => r.id === SUCCESS_RECEIPT_ID);
+    assert.ok(first);
+    assert.equal(first.outcome.receipt_ids.length, 1);
+    const refundId = first.outcome.receipt_ids[0];
+    assert.ok(result.receipts_outcome.some((r) => r.id === refundId));
+  });
+
+  it('lists receipts that all belong to the outcome chain', () => {
+    assert.ok(Array.isArray(result.receipts) && result.receipts.length > 0);
+    const ids = new Set(result.receipts_outcome.map((r) => r.id));
+    for (const receipt of result.receipts) {
+      assert.equal(typeof receipt.receipt_id, 'string');
+      assert.ok(ids.has(receipt.receipt_id));
+    }
+  });
+});
+
+describe('the captured RPC error for a transaction that could not be observed', () => {
+  const response = loadFixture(FIXTURE_FILES.rpcTimeout);
+
+  it('is a JSON-RPC error envelope with no result', () => {
+    assert.deepEqual(Object.keys(response).sort(), ['error', 'id', 'jsonrpc']);
+    assert.ok(!('result' in response));
+  });
+
+  it('is HANDLER_ERROR / TIMEOUT_ERROR / NOT_OBSERVED', () => {
+    const { error } = response;
+    assert.equal(error.name, 'HANDLER_ERROR');
+    assert.equal(error.cause.name, 'TIMEOUT_ERROR');
+    assert.equal(error.cause.info.cause, 'NOT_OBSERVED');
+    assert.equal(error.code, -32000);
+    assert.equal(error.message, 'Server error');
+    assert.equal(error.data, 'Timeout');
   });
 });

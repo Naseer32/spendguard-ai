@@ -1,6 +1,7 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import { checkExecution, EXECUTION_CODES as C } from './executionOutcome.js';
+import { FIXTURE_FILES, loadFixture } from '../testing/nearFixtures.js';
 
 // Synthetic data shaped like a NEAR `tx` RPC result. No fixture files.
 const outcome = (status, receiptIds = []) => ({
@@ -354,4 +355,72 @@ describe('checkExecution: bad input', () => {
     });
     assertFails(checkExecution(hostile), C.MALFORMED);
   });
+});
+
+describe('checkExecution: real testnet fixtures', () => {
+  const plain = () => structuredClone(loadFixture(FIXTURE_FILES.success));
+  const withReceipts = () => structuredClone(loadFixture(FIXTURE_FILES.successReceipts));
+  const ids = (r) => {
+    const [firstId] = r.transaction_outcome.outcome.receipt_ids;
+    const first = r.receipts_outcome.find((x) => x.id === firstId);
+    return { firstId, refundId: first.outcome.receipt_ids[0] };
+  };
+
+  it('accepts the real successful transfer', () => {
+    const r = plain();
+    assert.deepEqual(Object.keys(r.transaction_outcome.outcome.status), ['SuccessReceiptId']);
+    const res = checkExecution(r);
+    assert.equal(res.ok, true);
+    assert.equal(res.code, C.OK);
+    assert.equal(res.receiptCount, 2);
+  });
+
+  it('accepts the real transfer from the receipts lookup', () => {
+    const res = checkExecution(withReceipts());
+    assert.equal(res.ok, true);
+    assert.equal(res.receiptCount, 2);
+  });
+
+  it('rejects the real transfer without its transfer receipt', () => {
+    const r = plain();
+    const { firstId } = ids(r);
+    r.receipts_outcome = r.receipts_outcome.filter((x) => x.id !== firstId);
+    assert.deepEqual(checkExecution(r), { ok: false, code: C.RECEIPT_MISSING });
+  });
+
+  it('rejects the real transfer without its refund receipt', () => {
+    const r = plain();
+    const { refundId } = ids(r);
+    r.receipts_outcome = r.receipts_outcome.filter((x) => x.id !== refundId);
+    assert.deepEqual(checkExecution(r), { ok: false, code: C.RECEIPT_MISSING });
+  });
+
+  it('rejects the real transfer when its refund receipt failed', () => {
+    const r = plain();
+    const { refundId } = ids(r);
+    r.receipts_outcome.find((x) => x.id === refundId).outcome.status = { Failure: { ActionError: {} } };
+    assert.deepEqual(checkExecution(r), { ok: false, code: C.FAILED });
+  });
+
+  it('rejects the real transfer when it is not final', () => {
+    const r = plain();
+    r.final_execution_status = 'EXECUTED';
+    assert.deepEqual(checkExecution(r), { ok: false, code: C.NOT_FINAL });
+  });
+});
+
+describe('checkExecution: captured RPC timeout (HANDLER_ERROR / TIMEOUT_ERROR / NOT_OBSERVED)', () => {
+  // No result exists, so execution is unknown. It must never be reported as
+  // success (ok: true) or as a transaction failure (FAILED).
+  const response = loadFixture(FIXTURE_FILES.rpcTimeout);
+
+  for (const [label, input] of [['envelope', response], ['error object', response.error], ['null result', null]]) {
+    it(`is never success or FAILED: ${label}`, () => {
+      const res = checkExecution(input);
+      assert.equal(res.ok, false);
+      assert.notEqual(res.code, C.OK);
+      assert.notEqual(res.code, C.FAILED);
+      assert.equal(res.code, C.MALFORMED);
+    });
+  }
 });

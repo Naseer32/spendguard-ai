@@ -7,6 +7,8 @@ export const FIXTURE_FILES = Object.freeze({
   success: 'transfer-success.json',
   reverse: 'transfer-reverse.json',
   block: 'block-transfer-success.json',
+  successReceipts: 'transfer-success-receipts.json',
+  rpcTimeout: 'rpc-error-tx-timeout.json',
 });
 
 // 0.1 NEAR from SOURCE_ACCOUNT to RECIPIENT_ACCOUNT, included in SUCCESS_BLOCK_HASH.
@@ -25,3 +27,6 @@ export function readFixtureText(name) {
 export function loadFixture(name) {
   return JSON.parse(readFixtureText(name));
 }
+
+// First receipt of the successful transfer: the transaction outcome hands off to it.
+export const SUCCESS_RECEIPT_ID = '9tmxpzH1PUynkWWbCUPvKGjiZazabJi1WXwx4q7Cfk6F';
