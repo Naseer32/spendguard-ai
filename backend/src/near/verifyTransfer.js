@@ -14,12 +14,29 @@
 //   Valid execution, authorization, block time VERIFIED      mark EXECUTED
 //   Execution does not match authorization     MISMATCH      keep reservation, owner resolves
 //
+// matchAuthorization result codes are mapped explicitly:
+//   MATCH                                      continue verification
+//   MALFORMED, BAD_AUTHORIZATION               HOLD
+//   HASH_MISMATCH, SIGNER_MISMATCH,
+//   RECEIVER_MISMATCH, ACTIONS_INVALID,
+//   AMOUNT_MISMATCH                            MISMATCH
+//   EXECUTION_NOT_OK                           FAILED only if the execution check
+//                                              verified a failure AND the caller
+//                                              independently confirmed that the
+//                                              authorization identity and transfer
+//                                              details match (transferDetailsMatch
+//                                              === true); MISMATCH if they do not;
+//                                              HOLD if that was not supplied
+//   anything else (unknown code or shape)      HOLD
+//
 // Safety properties (all covered by tests):
 //   * Only VERIFIED marks a payment EXECUTED.
 //   * The reservation is released only for a verified execution failure of a
-//     transaction that matches the authorization, or after the not-found window.
+//     transaction whose authorization identity and transfer details match, or
+//     after the not-found window.
 //   * INCONCLUSIVE never changes state (changesState: false), so retries create
 //     no audit entries.
+//   * Every HOLD and MISMATCH keeps the reservation.
 //   * Unknown, missing or malformed evidence never produces VERIFIED, FAILED or
 //     INCONCLUSIVE from the "found" path; it produces HOLD or MISMATCH.
 
@@ -74,6 +91,20 @@ const ACTION_FOR = Object.freeze({
 
 const NS_PER_MS = 1_000_000n;
 
+// Result codes of matchAuthorization (src/near/matchAuthorization.js).
+const MATCH = Object.freeze({
+  MATCH: 'MATCH',
+  EXECUTION_NOT_OK: 'EXECUTION_NOT_OK',
+});
+const MISMATCH_CODES = new Set([
+  'HASH_MISMATCH',
+  'SIGNER_MISMATCH',
+  'RECEIVER_MISMATCH',
+  'ACTIONS_INVALID',
+  'AMOUNT_MISMATCH',
+]);
+// MALFORMED, BAD_AUTHORIZATION and any unrecognised code fall through to HOLD.
+
 const isObject = (v) => typeof v === 'object' && v !== null && !Array.isArray(v);
 const isResult = (r) => isObject(r) && typeof r.ok === 'boolean' && typeof r.code === 'string';
 
@@ -120,23 +151,38 @@ function classifyExecution(execution) {
   }
 }
 
+// matchAuthorization result -> 'matched' | a final verdict (hold / mismatch).
+// `execution` is the classified execution result ('ok' or 'failed' here).
+function classifyMatch(match, execution, transferDetailsMatch) {
+  if (!isResult(match)) return hold();
+  if (match.ok) return match.code === MATCH.MATCH ? 'matched' : hold();
+  if (match.code === MATCH.EXECUTION_NOT_OK) {
+    // matchAuthorization says the execution is not OK. That only agrees with
+    // our own execution check when that check also found a failure.
+    if (execution !== 'failed') return hold();
+    if (typeof transferDetailsMatch !== 'boolean') return hold();
+    return transferDetailsMatch
+      ? 'matched'
+      : verdict(VERDICTS.MISMATCH, REASONS.AUTHORIZATION_MISMATCH);
+  }
+  if (MISMATCH_CODES.has(match.code)) {
+    return verdict(VERDICTS.MISMATCH, REASONS.AUTHORIZATION_MISMATCH);
+  }
+  return hold(); // MALFORMED, BAD_AUTHORIZATION, unknown codes
+}
+
 function evaluateFound(input) {
   const execution = classifyExecution(input.execution);
   if (typeof execution !== 'string') return execution; // inconclusive or hold
 
-  // Does the transaction match what was authorized (signer, receiver, amount)?
-  // The match module's "malformed input" code is the literal 'MALFORMED';
-  // every other failure means a real mismatch. Both keep the reservation.
-  const match = input.match;
-  if (!isResult(match)) return hold();
-  if (!match.ok) {
-    return match.code === 'MALFORMED'
-      ? hold()
-      : verdict(VERDICTS.MISMATCH, REASONS.AUTHORIZATION_MISMATCH);
-  }
+  // Does the transaction match what was authorized? Returns 'matched' or a verdict.
+  const match = classifyMatch(input.match, execution, input.transferDetailsMatch);
+  if (typeof match !== 'string') return match;
 
-  // A verified failure releases the budget only for a transaction that matches
-  // the authorization; a failed transaction that does not match was handled above.
+  // A verified failure releases the budget only when the authorization identity
+  // and transfer details match: either matchAuthorization said MATCH, or it said
+  // EXECUTION_NOT_OK and the caller independently confirmed the details. Every
+  // other case returned above.
   if (execution === 'failed') return verdict(VERDICTS.FAILED, REASONS.EXECUTION_FAILED);
 
   const time = input.time;
@@ -159,6 +205,9 @@ function evaluateFound(input) {
 //   // lookup FOUND:
 //   execution: result of checkExecution,
 //   match: result of matchAuthorization ({ ok, code }),
+//   transferDetailsMatch: boolean, needed only when match.code is
+//     EXECUTION_NOT_OK: true only if the authorization identity and the
+//     transfer details were independently confirmed to match,
 //   time: result of checkBlockTime (needed only when execution succeeded),
 //   hashAlreadyUsed: boolean (another request already uses this tx hash),
 //   // lookup NOT_FOUND:

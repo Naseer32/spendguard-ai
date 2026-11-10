@@ -10,11 +10,12 @@ import {
 } from './verifyTransfer.js';
 
 const OK = { ok: true, code: 'OK' };
+const MATCHED = { ok: true, code: 'MATCH' };
 const bad = (code) => ({ ok: false, code });
 const found = (overrides = {}) => ({
   lookup: LOOKUP.FOUND,
   execution: OK,
-  match: OK,
+  match: MATCHED,
   time: OK,
   hashAlreadyUsed: false,
   ...overrides,
@@ -83,7 +84,7 @@ describe('verifyTransfer: found transaction', () => {
     expectVerdict(verifyTransfer(found()), V.VERIFIED, R.OK, A.MARK_EXECUTED);
   });
 
-  it('fails and releases on a verified execution failure of a matching transaction', () => {
+  it('fails and releases on a verified execution failure when matchAuthorization says MATCH', () => {
     expectVerdict(
       verifyTransfer(found({ execution: bad('FAILED'), time: undefined })),
       V.FAILED,
@@ -112,24 +113,38 @@ describe('verifyTransfer: found transaction', () => {
     }
   });
 
-  it('keeps the reservation on any authorization mismatch', () => {
-    for (const code of ['SIGNER_MISMATCH', 'RECEIVER_MISMATCH', 'AMOUNT_MISMATCH', 'ACTION_MISMATCH', 'ANYTHING_ELSE']) {
+  it('keeps the reservation on every mismatch code', () => {
+    for (const code of ['HASH_MISMATCH', 'SIGNER_MISMATCH', 'RECEIVER_MISMATCH', 'ACTIONS_INVALID', 'AMOUNT_MISMATCH']) {
       mismatch(verifyTransfer(found({ match: bad(code) })), R.AUTHORIZATION_MISMATCH);
     }
   });
 
-  it('holds when the match evidence is malformed or missing', () => {
-    held(verifyTransfer(found({ match: bad('MALFORMED') })), R.MALFORMED_EVIDENCE);
-    for (const match of [undefined, null, {}, 'ok', { ok: 1, code: 'OK' }]) {
+  it('holds on MALFORMED and BAD_AUTHORIZATION', () => {
+    for (const code of ['MALFORMED', 'BAD_AUTHORIZATION']) {
+      held(verifyTransfer(found({ match: bad(code) })), R.MALFORMED_EVIDENCE);
+    }
+  });
+
+  it('holds on unknown match codes and on missing or malformed match results', () => {
+    const odd = [
+      bad('SOMETHING_NEW'),
+      bad('MATCH'), // ok: false with the success code is contradictory
+      { ok: true, code: 'OK' }, // success must be exactly MATCH
+      { ok: true, code: 'SOMETHING_NEW' },
+      undefined, null, {}, 'MATCH', { ok: 1, code: 'MATCH' },
+    ];
+    for (const match of odd) {
       held(verifyTransfer(found({ match })), R.MALFORMED_EVIDENCE);
     }
   });
 
-  it('never releases a failed transaction that does not match the authorization', () => {
-    mismatch(
-      verifyTransfer(found({ execution: bad('FAILED'), match: bad('SIGNER_MISMATCH') })),
-      R.AUTHORIZATION_MISMATCH,
-    );
+  it('never lets a mismatch through, even if execution also failed', () => {
+    for (const code of ['HASH_MISMATCH', 'SIGNER_MISMATCH', 'RECEIVER_MISMATCH', 'ACTIONS_INVALID', 'AMOUNT_MISMATCH']) {
+      mismatch(
+        verifyTransfer(found({ execution: bad('FAILED'), match: bad(code), transferDetailsMatch: true })),
+        R.AUTHORIZATION_MISMATCH,
+      );
+    }
     held(verifyTransfer(found({ execution: bad('FAILED'), match: undefined })), R.MALFORMED_EVIDENCE);
   });
 
@@ -155,6 +170,56 @@ describe('verifyTransfer: found transaction', () => {
     for (const hashAlreadyUsed of [undefined, null, 'false', 0, 1]) {
       held(verifyTransfer(found({ hashAlreadyUsed })), R.MALFORMED_EVIDENCE);
     }
+  });
+});
+
+describe('verifyTransfer: EXECUTION_NOT_OK from matchAuthorization', () => {
+  const notOk = (overrides = {}) =>
+    found({ execution: bad('FAILED'), match: bad('EXECUTION_NOT_OK'), time: undefined, ...overrides });
+
+  it('fails and releases only when the details were independently confirmed to match', () => {
+    expectVerdict(
+      verifyTransfer(notOk({ transferDetailsMatch: true })),
+      V.FAILED,
+      R.EXECUTION_FAILED,
+      A.RELEASE_RESERVATION,
+    );
+  });
+
+  it('is a mismatch when the details do not independently match', () => {
+    mismatch(verifyTransfer(notOk({ transferDetailsMatch: false })), R.AUTHORIZATION_MISMATCH);
+  });
+
+  it('holds when the independent confirmation was not supplied or is not a boolean', () => {
+    for (const transferDetailsMatch of [undefined, null, 'true', 1, 0, {}]) {
+      held(verifyTransfer(notOk({ transferDetailsMatch })), R.MALFORMED_EVIDENCE);
+    }
+    held(verifyTransfer(notOk()), R.MALFORMED_EVIDENCE);
+  });
+
+  it('holds when our own execution check disagrees (execution looked fine)', () => {
+    held(
+      verifyTransfer(found({ match: bad('EXECUTION_NOT_OK'), transferDetailsMatch: true })),
+      R.MALFORMED_EVIDENCE,
+    );
+  });
+
+  it('stays inconclusive when our execution check is not final', () => {
+    inconclusive(
+      verifyTransfer({ lookup: LOOKUP.FOUND, execution: bad('NOT_FINAL'), match: bad('EXECUTION_NOT_OK'), transferDetailsMatch: true }),
+      R.NOT_FINAL,
+    );
+  });
+
+  it('holds on a missing receipt or chain error regardless of the match result', () => {
+    held(
+      verifyTransfer(notOk({ execution: bad('RECEIPT_MISSING'), transferDetailsMatch: true })),
+      R.RECEIPT_MISSING,
+    );
+    held(
+      verifyTransfer(notOk({ execution: bad('CHAIN_INVALID'), transferDetailsMatch: true })),
+      R.CHAIN_INVALID,
+    );
   });
 });
 
@@ -191,10 +256,12 @@ describe('verifyTransfer: bad input', () => {
 });
 
 describe('verifyTransfer: safety invariants over every combination', () => {
+  const NOT_OK = bad('EXECUTION_NOT_OK');
   const executions = [OK, bad('NOT_FINAL'), bad('INCOMPLETE'), bad('FAILED'), bad('RECEIPT_MISSING'), bad('CHAIN_INVALID'), bad('MALFORMED'), bad('NEW_CODE'), undefined, null];
-  const matches = [OK, bad('SIGNER_MISMATCH'), bad('AMOUNT_MISMATCH'), bad('MALFORMED'), undefined, null];
+  const matches = [MATCHED, NOT_OK, bad('HASH_MISMATCH'), bad('SIGNER_MISMATCH'), bad('AMOUNT_MISMATCH'), bad('MALFORMED'), bad('BAD_AUTHORIZATION'), bad('NEW_CODE'), undefined, null];
   const times = [OK, bad('BLOCK_BEFORE_AUTHORIZATION'), bad('MALFORMED'), undefined, null];
   const hashes = [false, true, undefined, null];
+  const details = [true, false, undefined];
 
   function everyCombination(fn) {
     let count = 0;
@@ -202,9 +269,11 @@ describe('verifyTransfer: safety invariants over every combination', () => {
       for (const match of matches) {
         for (const time of times) {
           for (const hashAlreadyUsed of hashes) {
-            const input = { lookup: LOOKUP.FOUND, execution, match, time, hashAlreadyUsed };
-            fn(verifyTransfer(input), input);
-            count += 1;
+            for (const transferDetailsMatch of details) {
+              const input = { lookup: LOOKUP.FOUND, execution, match, time, hashAlreadyUsed, transferDetailsMatch };
+              fn(verifyTransfer(input), input);
+              count += 1;
+            }
           }
         }
       }
@@ -213,24 +282,38 @@ describe('verifyTransfer: safety invariants over every combination', () => {
   }
 
   it('covers a meaningful number of combinations', () => {
-    assert.equal(everyCombination(() => {}), 10 * 6 * 5 * 4);
+    assert.equal(everyCombination(() => {}), 10 * 10 * 5 * 4 * 3);
   });
 
   it('VERIFIED happens only when every check passed', () => {
     everyCombination((res, input) => {
       const allGood =
-        input.execution === OK && input.match === OK && input.time === OK && input.hashAlreadyUsed === false;
+        input.execution === OK && input.match === MATCHED && input.time === OK && input.hashAlreadyUsed === false;
       assert.equal(res.verdict === V.VERIFIED, allGood);
       assert.equal(res.action === A.MARK_EXECUTED, allGood);
     });
   });
 
-  it('the reservation is released only for a failed transaction that matches the authorization', () => {
+  it('the reservation is released only for a verified failure whose details match', () => {
     everyCombination((res, input) => {
       if (res.action === A.RELEASE_RESERVATION) {
         assert.equal(res.verdict, V.FAILED);
         assert.equal(input.execution.code, 'FAILED');
-        assert.equal(input.match, OK);
+        const matchedByAuthorizer = input.match === MATCHED;
+        const matchedIndependently = input.match === NOT_OK && input.transferDetailsMatch === true;
+        assert.ok(matchedByAuthorizer || matchedIndependently);
+      }
+    });
+  });
+
+  it('a mismatch, malformed or unknown match code never releases or executes', () => {
+    everyCombination((res, input) => {
+      const code = input.match?.code;
+      const dangerous = [V.VERIFIED, V.FAILED, V.INCONCLUSIVE];
+      const blocked = ['HASH_MISMATCH', 'SIGNER_MISMATCH', 'AMOUNT_MISMATCH', 'MALFORMED', 'BAD_AUTHORIZATION', 'NEW_CODE'];
+      const executionDecided = input.execution === OK || input.execution?.code === 'FAILED';
+      if (executionDecided && (input.match === undefined || input.match === null || blocked.includes(code))) {
+        assert.ok(!dangerous.includes(res.verdict), `${res.verdict} for match ${code}`);
       }
     });
   });
@@ -241,7 +324,7 @@ describe('verifyTransfer: safety invariants over every combination', () => {
     });
   });
 
-  it('every non-verified, non-failed, non-inconclusive result keeps the reservation', () => {
+  it('every HOLD and MISMATCH keeps the reservation', () => {
     everyCombination((res) => {
       if (res.verdict === V.HOLD || res.verdict === V.MISMATCH) {
         assert.equal(res.action, A.KEEP_RESERVATION);
