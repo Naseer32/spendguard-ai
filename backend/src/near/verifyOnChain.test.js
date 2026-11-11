@@ -171,3 +171,51 @@ describe('verifyOnChain: safety', () => {
     }
   });
 });
+
+describe('verifyOnChain: unknown transaction probe (real captured responses)', () => {
+  const asRemote = (captured) => new RpcRemoteError({
+    rpcCode: captured.code, rpcMessage: captured.message, remote: JSON.stringify(captured),
+  });
+  const timeout = () => asRemote(loadFixture(FIXTURE_FILES.rpcTimeout).error);
+  const unknown = () => asRemote(loadFixture(FIXTURE_FILES.rpcUnknown).error);
+
+  // FINAL lookups time out; NONE lookups answer with `probe` (a result or an Error).
+  function probeRpc(probe) {
+    const calls = [];
+    return {
+      calls,
+      async call(method, params) {
+        calls.push(`${method}:${params?.wait_until ?? ''}`);
+        if (method !== 'tx') throw new Error('unexpected method');
+        const value = params.wait_until === 'NONE' ? probe : timeout();
+        if (value instanceof Error) throw value;
+        return structuredClone(value);
+      },
+    };
+  }
+
+  it('retries a confirmed not-found inside the 30 minute window', async () => {
+    const rpc = probeRpc(unknown());
+    const res = await run(rpc, { submittedAt: iso(blockMs - 60_000), now: NOW });
+    expectVerdict(res, V.INCONCLUSIVE, R.NOT_FOUND_YET);
+    assert.deepEqual(rpc.calls, ['tx:FINAL', 'tx:NONE']);
+  });
+
+  it('fails (release) a confirmed not-found after 30 minutes', async () => {
+    const res = await run(probeRpc(unknown()), { submittedAt: iso(blockMs - 31 * 60_000), now: iso(blockMs) });
+    expectVerdict(res, V.FAILED, R.NOT_FOUND_TIMEOUT);
+    assert.equal(res.action, A.RELEASE_RESERVATION);
+  });
+
+  it('never releases when the node knows the transaction, however old', async () => {
+    const res = await run(probeRpc(real()), { submittedAt: iso(blockMs - 86_400_000), now: NOW });
+    expectVerdict(res, V.INCONCLUSIVE, R.NOT_OBSERVED);
+  });
+
+  it('never releases when the probe itself times out or fails', async () => {
+    for (const probe of [timeout(), new RpcTimeoutError(), new RpcNetworkError(), new Error('boom')]) {
+      const res = await run(probeRpc(probe), { submittedAt: iso(blockMs - 86_400_000), now: NOW });
+      expectVerdict(res, V.INCONCLUSIVE, R.NOT_OBSERVED);
+    }
+  });
+});

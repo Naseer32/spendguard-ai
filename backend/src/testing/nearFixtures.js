@@ -9,6 +9,7 @@ export const FIXTURE_FILES = Object.freeze({
   block: 'block-transfer-success.json',
   successReceipts: 'transfer-success-receipts.json',
   rpcTimeout: 'rpc-error-tx-timeout.json',
+  rpcUnknown: 'rpc-error-unknown-transaction.json',
 });
 
 // 0.1 NEAR from SOURCE_ACCOUNT to RECIPIENT_ACCOUNT, included in SUCCESS_BLOCK_HASH.

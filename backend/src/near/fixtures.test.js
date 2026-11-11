@@ -182,3 +182,15 @@ describe('the captured RPC error for a transaction that could not be observed', 
     assert.equal(error.data, 'Timeout');
   });
 });
+
+describe('the captured RPC error for an unknown transaction (wait_until NONE)', () => {
+  const response = loadFixture(FIXTURE_FILES.rpcUnknown);
+
+  it('is HANDLER_ERROR / UNKNOWN_TRANSACTION with no result', () => {
+    assert.deepEqual(Object.keys(response).sort(), ['error', 'id', 'jsonrpc']);
+    assert.equal(response.error.name, 'HANDLER_ERROR');
+    assert.equal(response.error.cause.name, 'UNKNOWN_TRANSACTION');
+    assert.equal(response.error.code, -32000);
+    assert.equal(typeof response.error.cause.info.requested_transaction_hash, 'string');
+  });
+});

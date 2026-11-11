@@ -35,6 +35,24 @@ function lookupFromError(error) {
   return LOOKUP.NOT_OBSERVED;
 }
 
+// The normal lookup waits for FINAL, so an unknown hash looks like a timeout.
+// One more lookup with wait_until NONE answers at once: UNKNOWN_TRANSACTION
+// means the node does not know the hash (confirmed not-found; the 30 minute
+// window in verifyTransfer decides when that becomes FAILED). Anything else,
+// including a result, stays NOT_OBSERVED.
+async function probeUnknown(rpc, authorization) {
+  try {
+    await rpc.call('tx', {
+      tx_hash: authorization.txHash,
+      sender_account_id: authorization.signerId,
+      wait_until: 'NONE',
+    });
+    return LOOKUP.NOT_OBSERVED;
+  } catch (error) {
+    return lookupFromError(error);
+  }
+}
+
 // input: { rpc, authorization: { txHash, signerId, receiverId, amount },
 //          authorizedAt, submittedAt, now (UTC ISO strings),
 //          hashAlreadyUsed: boolean }
@@ -50,7 +68,8 @@ async function run(input) {
       wait_until: 'FINAL',
     });
   } catch (error) {
-    const lookup = lookupFromError(error);
+    let lookup = lookupFromError(error);
+    if (lookup === LOOKUP.NOT_OBSERVED) lookup = await probeUnknown(rpc, authorization);
     return verifyTransfer(lookup === LOOKUP.NOT_FOUND ? { lookup, submittedAt, now } : { lookup });
   }
 
