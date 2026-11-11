@@ -1,0 +1,71 @@
+@import "tailwindcss";
+
+/*
+ * SpendGuard AI design tokens.
+ * White shell, light grey page surface, dark navy text, one subtle blue accent,
+ * and clear green / red / amber status colours.
+ */
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI",
+    Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+
+  /* Text (navy) */
+  --color-ink: #0b1f3a;
+  --color-ink-soft: #3b4d68;
+  --color-ink-muted: #66758c;
+
+  /* Surfaces and lines */
+  --color-surface: #f4f6f9;
+  --color-surface-strong: #e9edf3;
+  --color-line: #e2e7ee;
+
+  /* Accent (subtle blue) */
+  --color-accent-50: #eef3fd;
+  --color-accent-100: #dce7fb;
+  --color-accent-600: #2f63d0;
+  --color-accent-700: #264fa8;
+
+  /* Status */
+  --color-success-50: #e9f6ef;
+  --color-success-200: #b7e1c8;
+  --color-success-600: #1a8a4f;
+  --color-success-700: #14693d;
+  --color-danger-50: #fdecec;
+  --color-danger-200: #f5bcbc;
+  --color-danger-600: #d12f2f;
+  --color-danger-700: #a82020;
+  --color-warning-50: #fff4df;
+  --color-warning-200: #f6d596;
+  --color-warning-600: #c77a0a;
+  --color-warning-700: #8f5606;
+
+  --shadow-card: 0 1px 2px rgb(11 31 58 / 0.04), 0 1px 3px rgb(11 31 58 / 0.04);
+}
+
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
+    -webkit-tap-highlight-color: transparent;
+  }
+  body {
+    margin: 0;
+    background: #ffffff;
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+  }
+  :focus-visible {
+    outline: 2px solid var(--color-accent-600);
+    outline-offset: 2px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
