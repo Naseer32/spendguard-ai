@@ -29,6 +29,11 @@
 //                                              HOLD if that was not supplied
 //   anything else (unknown code or shape)      HOLD
 //
+// Chain check, evaluated first for a found transaction:
+//   chainOk === true                           continue
+//   chainOk === false (another network)        HOLD (WRONG_CHAIN)
+//   anything else                              HOLD (MALFORMED_EVIDENCE)
+//
 // Safety properties (all covered by tests):
 //   * Only VERIFIED marks a payment EXECUTED.
 //   * The reservation is released only for a verified execution failure of a
@@ -76,6 +81,7 @@ export const REASONS = Object.freeze({
   MALFORMED_EVIDENCE: 'MALFORMED_EVIDENCE',
   CHAIN_INVALID: 'CHAIN_INVALID',
   RECEIPT_MISSING: 'RECEIPT_MISSING',
+  WRONG_CHAIN: 'WRONG_CHAIN',
   AUTHORIZATION_MISMATCH: 'AUTHORIZATION_MISMATCH',
   BLOCK_BEFORE_AUTHORIZATION: 'BLOCK_BEFORE_AUTHORIZATION',
   HASH_ALREADY_USED: 'HASH_ALREADY_USED',
@@ -172,6 +178,10 @@ function classifyMatch(match, execution, transferDetailsMatch) {
 }
 
 function evaluateFound(input) {
+  // Evidence from the wrong network is never usable, whatever else it says.
+  if (input.chainOk === false) return hold(REASONS.WRONG_CHAIN);
+  if (input.chainOk !== true) return hold();
+
   const execution = classifyExecution(input.execution);
   if (typeof execution !== 'string') return execution; // inconclusive or hold
 
@@ -203,6 +213,7 @@ function evaluateFound(input) {
 // input: {
 //   lookup: 'FOUND' | 'NOT_OBSERVED' | 'NOT_FOUND',
 //   // lookup FOUND:
+//   chainOk: boolean, true only if the RPC reported chain_id "testnet",
 //   execution: result of checkExecution,
 //   match: result of matchAuthorization ({ ok, code }),
 //   transferDetailsMatch: boolean, needed only when match.code is

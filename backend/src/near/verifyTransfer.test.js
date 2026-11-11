@@ -14,6 +14,7 @@ const MATCHED = { ok: true, code: 'MATCH' };
 const bad = (code) => ({ ok: false, code });
 const found = (overrides = {}) => ({
   lookup: LOOKUP.FOUND,
+  chainOk: true,
   execution: OK,
   match: MATCHED,
   time: OK,
@@ -96,7 +97,7 @@ describe('verifyTransfer: found transaction', () => {
   it('is inconclusive when execution is not final or incomplete, needing no other evidence', () => {
     for (const code of ['NOT_FINAL', 'INCOMPLETE']) {
       inconclusive(
-        verifyTransfer({ lookup: LOOKUP.FOUND, execution: bad(code) }),
+        verifyTransfer({ lookup: LOOKUP.FOUND, chainOk: true, execution: bad(code) }),
         R.NOT_FINAL,
       );
     }
@@ -173,6 +174,33 @@ describe('verifyTransfer: found transaction', () => {
   });
 });
 
+describe('verifyTransfer: chain check', () => {
+  it('holds when the evidence came from another network', () => {
+    held(verifyTransfer(found({ chainOk: false })), R.WRONG_CHAIN);
+  });
+
+  it('holds when the chain was not confirmed or the value is not a boolean', () => {
+    for (const chainOk of [undefined, null, 'true', 'testnet', 1, 0, {}]) {
+      held(verifyTransfer(found({ chainOk })), R.MALFORMED_EVIDENCE);
+    }
+  });
+
+  it('checks the chain before anything else, even when execution is not final', () => {
+    held(
+      verifyTransfer({ lookup: LOOKUP.FOUND, chainOk: false, execution: bad('NOT_FINAL') }),
+      R.WRONG_CHAIN,
+    );
+    held(
+      verifyTransfer(found({ chainOk: false, execution: bad('FAILED'), match: MATCHED })),
+      R.WRONG_CHAIN,
+    );
+  });
+
+  it('does not affect lookups that found nothing', () => {
+    inconclusive(verifyTransfer({ lookup: LOOKUP.NOT_OBSERVED, chainOk: false }), R.NOT_OBSERVED);
+  });
+});
+
 describe('verifyTransfer: EXECUTION_NOT_OK from matchAuthorization', () => {
   const notOk = (overrides = {}) =>
     found({ execution: bad('FAILED'), match: bad('EXECUTION_NOT_OK'), time: undefined, ...overrides });
@@ -206,7 +234,7 @@ describe('verifyTransfer: EXECUTION_NOT_OK from matchAuthorization', () => {
 
   it('stays inconclusive when our execution check is not final', () => {
     inconclusive(
-      verifyTransfer({ lookup: LOOKUP.FOUND, execution: bad('NOT_FINAL'), match: bad('EXECUTION_NOT_OK'), transferDetailsMatch: true }),
+      verifyTransfer({ lookup: LOOKUP.FOUND, chainOk: true, execution: bad('NOT_FINAL'), match: bad('EXECUTION_NOT_OK'), transferDetailsMatch: true }),
       R.NOT_FINAL,
     );
   });
@@ -262,6 +290,7 @@ describe('verifyTransfer: safety invariants over every combination', () => {
   const times = [OK, bad('BLOCK_BEFORE_AUTHORIZATION'), bad('MALFORMED'), undefined, null];
   const hashes = [false, true, undefined, null];
   const details = [true, false, undefined];
+  const chains = [true, false, undefined];
 
   function everyCombination(fn) {
     let count = 0;
@@ -270,9 +299,11 @@ describe('verifyTransfer: safety invariants over every combination', () => {
         for (const time of times) {
           for (const hashAlreadyUsed of hashes) {
             for (const transferDetailsMatch of details) {
-              const input = { lookup: LOOKUP.FOUND, execution, match, time, hashAlreadyUsed, transferDetailsMatch };
-              fn(verifyTransfer(input), input);
-              count += 1;
+              for (const chainOk of chains) {
+                const input = { lookup: LOOKUP.FOUND, chainOk, execution, match, time, hashAlreadyUsed, transferDetailsMatch };
+                fn(verifyTransfer(input), input);
+                count += 1;
+              }
             }
           }
         }
@@ -282,13 +313,17 @@ describe('verifyTransfer: safety invariants over every combination', () => {
   }
 
   it('covers a meaningful number of combinations', () => {
-    assert.equal(everyCombination(() => {}), 10 * 10 * 5 * 4 * 3);
+    assert.equal(everyCombination(() => {}), 10 * 10 * 5 * 4 * 3 * 3);
   });
 
   it('VERIFIED happens only when every check passed', () => {
     everyCombination((res, input) => {
       const allGood =
-        input.execution === OK && input.match === MATCHED && input.time === OK && input.hashAlreadyUsed === false;
+        input.chainOk === true &&
+        input.execution === OK &&
+        input.match === MATCHED &&
+        input.time === OK &&
+        input.hashAlreadyUsed === false;
       assert.equal(res.verdict === V.VERIFIED, allGood);
       assert.equal(res.action === A.MARK_EXECUTED, allGood);
     });
@@ -298,6 +333,7 @@ describe('verifyTransfer: safety invariants over every combination', () => {
     everyCombination((res, input) => {
       if (res.action === A.RELEASE_RESERVATION) {
         assert.equal(res.verdict, V.FAILED);
+        assert.equal(input.chainOk, true);
         assert.equal(input.execution.code, 'FAILED');
         const matchedByAuthorizer = input.match === MATCHED;
         const matchedIndependently = input.match === NOT_OK && input.transferDetailsMatch === true;
