@@ -7,6 +7,8 @@ import http from 'node:http';
 import { createApp } from './app.js';
 import { openDatabase } from './db/database.js';
 import { createSweeper } from './sweeper.js';
+import { createRpcClient } from './near/rpcClient.js';
+import { createSubmittedSweeper } from './submittedSweeper.js';
 
 export const SERVER_TIMEOUTS = Object.freeze({
   headersTimeout: 15_000,
@@ -44,6 +46,7 @@ export async function startServer({
   const database = ownsDb ? openDatabase(config.dbPath) : db;
   let server = null;
   let sweeper = null;
+  let submittedSweeper = null;
   let routes = [];
 
   try {
@@ -54,6 +57,17 @@ export async function startServer({
     server.requestTimeout = SERVER_TIMEOUTS.requestTimeout;
     server.keepAliveTimeout = SERVER_TIMEOUTS.keepAliveTimeout;
     sweeper = createSweeper({ db: database, logger, now, intervalMs: config.sweepIntervalMs });
+    submittedSweeper = createSubmittedSweeper({
+      db: database,
+      rpc: createRpcClient({
+        url: config.near.rpcUrl,
+        timeoutMs: config.near.rpcTimeoutMs,
+        maxResponseBytes: config.near.rpcMaxResponseBytes,
+      }),
+      logger,
+      now,
+      intervalMs: Math.min(Math.max(config.sweepIntervalMs, 15_000), 3_600_000),
+    });
 
     await new Promise((resolve, reject) => {
       server.once('error', reject);
@@ -79,6 +93,7 @@ export async function startServer({
 
   server.on('error', (error) => logger.error('server.error', { error }));
   sweeper.start();
+  submittedSweeper.start();
   const { port } = server.address();
   logger.info('server.started', {
     host: config.host,
@@ -98,6 +113,7 @@ export async function startServer({
   let closing = null;
   async function shutdown() {
     sweeper.stop();
+    submittedSweeper.stop();
     const closed = new Promise((resolve) => {
       server.close(() => resolve());
     });
@@ -118,6 +134,7 @@ export async function startServer({
     db: database,
     routes,
     sweeper,
+    submittedSweeper,
     close() {
       if (closing === null) {
         closing = shutdown();
