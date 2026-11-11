@@ -80,7 +80,7 @@ const FINAL = Object.freeze({
   [VERDICTS.MISMATCH]: { to: STATUS.MISMATCH, txStatus: 'MISMATCH', event: 'PAYMENT_MISMATCH' },
 });
 
-function phaseThree(db, requestId, txHash, outcome, context, ctx) {
+function phaseThree(db, requestId, txHash, outcome, context, ctx, auditHold = true) {
   return withWriteTransaction(db, () => {
     const row = requireRequestRow(db, requestId);
     if (row.status !== STATUS.SUBMITTED) return toRequestView(row); // settled meanwhile
@@ -94,7 +94,7 @@ function phaseThree(db, requestId, txHash, outcome, context, ctx) {
       db.prepare(
         `UPDATE transactions SET verification_status = ?, verification_detail = ?, verified_at = ? WHERE request_id = ?`,
       ).run(final.txStatus, JSON.stringify({ verdict: outcome.verdict, reason: outcome.reason }), ctx.nowIso, row.id);
-    } else if (outcome.verdict === VERDICTS.HOLD) {
+    } else if (outcome.verdict === VERDICTS.HOLD && auditHold) {
       appendAudit(db, {
         ts: ctx.nowIso,
         actor: ctx.actor,
@@ -110,7 +110,7 @@ function phaseThree(db, requestId, txHash, outcome, context, ctx) {
 
 // input: { txHash, signerId }. rpc: { call(method, params) }.
 // Returns { verdict, action, reason, request }.
-export async function reportTransaction(db, rpc, requestId, input, context) {
+export async function reportTransaction(db, rpc, requestId, input, context, options = {}) {
   const ctx = requireContext(context);
   const report = parseReport(input);
 
@@ -130,6 +130,46 @@ export async function reportTransaction(db, rpc, requestId, input, context) {
     hashAlreadyUsed: false, // the UNIQUE hash column already guarantees it is ours
   });
 
-  const request = phaseThree(db, requestId, report.txHash, outcome, context, ctx);
+  const request = phaseThree(db, requestId, report.txHash, outcome, context, ctx, options.auditHold !== false);
   return { verdict: outcome.verdict, action: outcome.action, reason: outcome.reason, request };
+}
+
+// SUBMITTED requests with a reported hash, oldest first.
+export function listSubmittedForReverify(db, limit) {
+  return db
+    .prepare(
+      `SELECT r.id AS request_id, t.near_tx_hash AS tx_hash, t.signer_account_id AS signer_id
+         FROM payment_requests r JOIN transactions t ON t.request_id = r.id
+        WHERE r.status = 'SUBMITTED'
+        ORDER BY t.submitted_at ASC, r.id ASC
+        LIMIT ?`,
+    )
+    .all(limit);
+}
+
+// Re-verifies stuck SUBMITTED requests one at a time (gentle on the RPC).
+// Never throws. A repeated HOLD is not audited again. Returns counts.
+export async function reverifySubmitted(db, rpc, context, { limit = 20 } = {}) {
+  const counts = { checked: 0, settled: 0, inconclusive: 0, held: 0, errors: 0 };
+  let rows;
+  try {
+    rows = listSubmittedForReverify(db, limit);
+  } catch {
+    counts.errors += 1;
+    return counts;
+  }
+  for (const row of rows) {
+    counts.checked += 1;
+    try {
+      const res = await reportTransaction(
+        db, rpc, row.request_id, { txHash: row.tx_hash, signerId: row.signer_id }, context, { auditHold: false },
+      );
+      if (res.verdict === VERDICTS.INCONCLUSIVE) counts.inconclusive += 1;
+      else if (res.verdict === VERDICTS.HOLD) counts.held += 1;
+      else counts.settled += 1;
+    } catch {
+      counts.errors += 1;
+    }
+  }
+  return counts;
 }
