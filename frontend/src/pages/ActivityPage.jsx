@@ -7,9 +7,9 @@ import { ActivityIcon, ShieldIcon } from '../components/ui/Icons.jsx';
 import PageContainer from '../components/ui/PageContainer.jsx';
 import ViewBoundary from '../components/ui/ViewBoundary.jsx';
 import { filterAudit, hasActiveFilters } from '../lib/filters.js';
-import { EVENT_INFO, eventLabel } from '../lib/reasons.js';
+import { AUDIT_EVENT_CODES, eventLabel } from '../lib/reasons.js';
 import { formatDateTime } from '../lib/time.js';
-import { useDemoStore } from '../state/DemoStore.jsx';
+import { useStore } from '../state/DataStore.jsx';
 import { useSettings } from '../state/Settings.jsx';
 
 const PAGE_SIZE = 10;
@@ -21,7 +21,9 @@ function initialFilters(search, agentsById) {
 }
 
 export default function ActivityPage() {
-  const { state, agentsById } = useDemoStore();
+  const { state, agentsById, isLive, actions, auditHasOlder } = useStore();
+  const [verify, setVerify] = useState({ busy: false, result: null, error: null });
+  const [olderBusy, setOlderBusy] = useState(false);
   const { timeZone } = useSettings();
   const { search } = useLocation();
   const [filters, setFilters] = useState(() => initialFilters(search, agentsById));
@@ -37,9 +39,22 @@ export default function ActivityPage() {
     setLimit(PAGE_SIZE);
   };
 
+  async function runVerify() {
+    setVerify({ busy: true, result: null, error: null });
+    const r = await actions.verifyAudit();
+    setVerify(r.ok ? { busy: false, result: r.verification, error: null } : { busy: false, result: null, error: r.error });
+  }
+
+  async function loadOlder() {
+    setOlderBusy(true);
+    await actions.loadOlderAudit();
+    setOlderBusy(false);
+    setLimit((l) => l + PAGE_SIZE * 5);
+  }
+
   const eventOptions = [
     { value: 'ALL', label: 'All events' },
-    ...Object.entries(EVENT_INFO).map(([value, label]) => ({ value, label })),
+    ...AUDIT_EVENT_CODES.map((value) => ({ value, label: eventLabel(value) })),
   ];
   const agentOptions = [
     { value: 'ALL', label: 'All agents' },
@@ -58,14 +73,42 @@ export default function ActivityPage() {
           </span>
           <div className="min-w-0 flex-1">
             <h2 id="chain-title" className="text-sm font-semibold text-ink">Audit chain integrity</h2>
-            <p className="text-sm text-ink-muted">
-              The backend keeps a tamper-evident, append-only audit chain. Verification is not available in this
-              demo, so no integrity result and no hashes are shown.
-            </p>
+            {isLive ? (
+              <p className="text-sm text-ink-muted" aria-live="polite">
+                {verify.error
+                  ? verify.error
+                  : verify.result
+                    ? verify.result.valid
+                      ? `Verified: all ${verify.result.entries} entries link correctly.${verify.result.truncated ? ' (The backend checked only part of the chain.)' : ''}`
+                      : `Verification FAILED on ${verify.result.entries} entries. ${verify.result.problems.length} problem(s) found.`
+                    : 'The backend keeps a tamper-evident, append-only audit chain. Run a check to have it verify every link.'}
+              </p>
+            ) : (
+              <p className="text-sm text-ink-muted">
+                The backend keeps a tamper-evident, append-only audit chain. Verification is not available in this
+                demo, so no integrity result and no hashes are shown.
+              </p>
+            )}
+            {isLive && verify.result && !verify.result.valid ? (
+              <ul className="mt-2 list-disc space-y-0.5 pl-5 text-xs text-danger-700">
+                {verify.result.problems.map((p, i) => (
+                  <li key={i}>
+                    {p.seq !== null ? `Entry #${p.seq}: ` : ''}
+                    {p.code}
+                  </li>
+                ))}
+              </ul>
+            ) : null}
           </div>
-          <Button disabled title="Chain verification needs the backend" aria-label="Verify chain (not available yet)">
-            Verify chain
-          </Button>
+          {isLive ? (
+            <Button onClick={runVerify} disabled={verify.busy}>
+              {verify.busy ? 'Verifying…' : 'Verify chain'}
+            </Button>
+          ) : (
+            <Button disabled title="Chain verification needs the backend" aria-label="Verify chain (not available in demo)">
+              Verify chain
+            </Button>
+          )}
         </CardBody>
       </Card>
 
@@ -110,6 +153,12 @@ export default function ActivityPage() {
                 <div className="border-t border-line p-4 text-center">
                   <Button onClick={() => setLimit((l) => l + PAGE_SIZE)}>
                     Load more ({visible.length - limit} remaining)
+                  </Button>
+                </div>
+              ) : auditHasOlder ? (
+                <div className="border-t border-line p-4 text-center">
+                  <Button onClick={loadOlder} disabled={olderBusy}>
+                    {olderBusy ? 'Loading…' : 'Load older entries from the backend'}
                   </Button>
                 </div>
               ) : null}

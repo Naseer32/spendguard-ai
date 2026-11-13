@@ -1,10 +1,12 @@
 import { NavLink } from 'react-router-dom';
 import { APP_INFO } from '../lib/appInfo.js';
+import { useStore } from '../state/DataStore.jsx';
 import Brand from './Brand.jsx';
 import { NAV_ITEMS } from './navItems.jsx';
 
 /** Desktop sidebar (lg and up). Hidden on mobile, where MobileNav is used. */
 export default function Sidebar() {
+  const { isLive } = useStore();
   return (
     <aside className="fixed inset-y-0 left-0 z-40 hidden w-64 flex-col border-r border-line bg-white lg:flex">
       <div className="flex h-16 items-center border-b border-line px-5">
@@ -35,8 +37,8 @@ export default function Sidebar() {
       </nav>
 
       <div className="border-t border-line px-5 py-4 text-xs text-ink-muted">
-        <p className="font-medium text-ink-soft">{APP_INFO.build} · v{APP_INFO.version}</p>
-        <p className="mt-0.5">Sample data only. No backend connection yet.</p>
+        <p className="font-medium text-ink-soft">{isLive ? 'Live' : APP_INFO.build} · v{APP_INFO.version}</p>
+        <p className="mt-0.5">{isLive ? 'Connected to your backend. No wallet signing.' : 'Sample data only. Not connected to a backend.'}</p>
       </div>
     </aside>
   );

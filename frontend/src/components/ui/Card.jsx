@@ -1,3 +1,4 @@
+import { useStore } from '../../state/DataStore.jsx';
 export function Card({ as: Tag = 'section', className = '', children, ...rest }) {
   return (
     <Tag
@@ -31,6 +32,8 @@ export function CardBody({ className = '', children }) {
 
 /** Small "Demo" pill for anything that is sample data, not real data. */
 export function DemoTag({ className = '' }) {
+  const { isLive } = useStore();
+  if (isLive) return null; // live data is never tagged as a demo
   return (
     <span
       className={`inline-flex items-center rounded-md bg-warning-50 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-warning-700 ring-1 ring-inset ring-warning-200 ${className}`}

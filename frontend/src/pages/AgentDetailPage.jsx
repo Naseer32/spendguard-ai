@@ -1,5 +1,6 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
+import ApiKeyDialog from '../components/ApiKeyDialog.jsx';
 import { EditLimitsModal } from '../components/AgentForms.jsx';
 import RecipientModal from '../components/RecipientModal.jsx';
 import Button from '../components/ui/Button.jsx';
@@ -20,7 +21,7 @@ import StatusBadge, { AgentStatusBadge } from '../components/ui/StatusBadge.jsx'
 import { dailyUsed, dailyUsedPercent } from '../lib/budget.js';
 import { compareYocto } from '../lib/money.js';
 import { formatDateTime, relativeTime } from '../lib/time.js';
-import { useDemoStore } from '../state/DemoStore.jsx';
+import { useStore } from '../state/DataStore.jsx';
 import { useSettings } from '../state/Settings.jsx';
 import { useToast } from '../state/Toasts.jsx';
 
@@ -39,7 +40,7 @@ function ListBadge({ type }) {
 
 export default function AgentDetailPage() {
   const { agentId } = useParams();
-  const { state, agentsById, actions } = useDemoStore();
+  const { state, agentsById, actions, isLive } = useStore();
   const { timeZone } = useSettings();
   const notify = useToast();
   const nowIso = useMemo(() => new Date().toISOString(), []);
@@ -49,7 +50,25 @@ export default function AgentDetailPage() {
   const [confirmStatus, setConfirmStatus] = useState(false);
   const [removeTarget, setRemoveTarget] = useState(null);
 
+  const [confirmRotate, setConfirmRotate] = useState(false);
+  const [issuedKey, setIssuedKey] = useState(null); // { apiKey }: shown once, then dropped
+  const [recipientsError, setRecipientsError] = useState(null);
+
   const agent = agentsById[agentId];
+  const loadRecipients = actions.loadRecipients;
+
+  // Live: recipient lists are fetched per agent when its page opens.
+  useEffect(() => {
+    if (!isLive || !agentId) return undefined;
+    let cancelled = false;
+    setRecipientsError(null);
+    loadRecipients(agentId).then((r) => {
+      if (!cancelled && !r.ok) setRecipientsError(r.error);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [isLive, agentId, loadRecipients]);
 
   if (!agent) {
     return (
@@ -76,18 +95,32 @@ export default function AgentDetailPage() {
   const remaining = compareYocto(agent.dailyBudget, used) > 0 ? (BigInt(agent.dailyBudget) - BigInt(used)).toString() : '0';
   const pausing = agent.status === 'ACTIVE';
 
-  function changeStatus() {
-    if (actions.setAgentStatus(agent.id, pausing ? 'PAUSED' : 'ACTIVE')) {
-      notify(pausing ? `${agent.name} paused (demo). Its payments would now be blocked.` : `${agent.name} resumed (demo).`);
+  const tag = isLive ? '' : ' (demo)';
+
+  async function changeStatus() {
+    const r = await actions.setAgentStatus(agent.id, pausing ? 'PAUSED' : 'ACTIVE');
+    if (r.ok) {
+      notify(pausing ? `${agent.name} paused${tag}. Its payments are now blocked.` : `${agent.name} resumed${tag}.`);
+    } else {
+      notify(r.error, 'error');
     }
     setConfirmStatus(false);
   }
 
-  function removeRecipient() {
-    if (removeTarget && actions.removeRecipient(agent.id, removeTarget.accountId)) {
-      notify(`${removeTarget.accountId} removed (demo).`);
+  async function removeRecipient() {
+    if (removeTarget) {
+      const r = await actions.removeRecipient(agent.id, removeTarget.accountId);
+      if (r.ok) notify(`${removeTarget.accountId} removed${tag}.`);
+      else notify(r.error, 'error');
     }
     setRemoveTarget(null);
+  }
+
+  async function rotateKey() {
+    const r = await actions.rotateKey(agent.id);
+    setConfirmRotate(false);
+    if (r.ok) setIssuedKey({ apiKey: r.apiKey });
+    else notify(r.error, 'error');
   }
 
   return (
@@ -97,6 +130,7 @@ export default function AgentDetailPage() {
       actions={
         <div className="flex flex-wrap gap-2">
           <Button onClick={() => setEditing(true)}>Edit limits</Button>
+          {isLive ? <Button onClick={() => setConfirmRotate(true)}>Rotate API key</Button> : null}
           <Button variant={pausing ? 'danger-outline' : 'primary'} onClick={() => setConfirmStatus(true)}>
             {pausing ? <PauseIcon className="h-4 w-4" /> : <PlayIcon className="h-4 w-4" />}
             {pausing ? 'Pause agent' : 'Resume agent'}
@@ -131,8 +165,16 @@ export default function AgentDetailPage() {
               ]}
             />
             <p className="rounded-lg bg-surface px-3 py-2 text-xs text-ink-muted">
-              API keys are managed by the backend and are never shown or stored in this app.
+              {isLive
+                ? 'The API key is shown once when it is created or rotated. It cannot be viewed again, and this app never stores it.'
+                : 'API keys are managed by the backend and are never shown or stored in this app.'}
             </p>
+            {isLive ? (
+              <p className="text-xs text-ink-muted">
+                Spent today is estimated from the most recent payment requests loaded here. The backend does
+                not expose a budget-usage figure yet.
+              </p>
+            ) : null}
           </CardBody>
         </Card>
 
@@ -165,6 +207,9 @@ export default function AgentDetailPage() {
             </Button>
           }
         />
+        {recipientsError ? (
+          <p role="alert" className="px-4 py-3 text-sm text-danger-700 sm:px-5">{recipientsError}</p>
+        ) : null}
         {recipients.length === 0 ? (
           <EmptyState title="No recipients yet" description="Payments to any recipient will need your approval until you allow it." />
         ) : (
@@ -179,11 +224,11 @@ export default function AgentDetailPage() {
                   <ListBadge type={r.listType} />
                   <Button
                     size="sm"
-                    onClick={() => {
+                    onClick={async () => {
                       const next = r.listType === 'ALLOW' ? 'BLOCK' : 'ALLOW';
-                      if (actions.setRecipient(agent.id, { accountId: r.accountId, listType: next, note: r.note })) {
-                        notify(`${r.accountId} moved to the ${next === 'ALLOW' ? 'allow' : 'block'} list (demo).`);
-                      }
+                      const res = await actions.setRecipient(agent.id, { accountId: r.accountId, listType: next, note: r.note });
+                      if (res.ok) notify(`${r.accountId} moved to the ${next === 'ALLOW' ? 'allow' : 'block'} list${tag}.`);
+                      else notify(res.error, 'error');
                     }}
                   >
                     {r.listType === 'ALLOW' ? 'Block' : 'Allow'}
@@ -226,7 +271,7 @@ export default function AgentDetailPage() {
         onConfirm={changeStatus}
         danger={pausing}
         title={pausing ? `Pause ${agent.name}?` : `Resume ${agent.name}?`}
-        description="Demo only: this changes a sample record in your browser session."
+        description={isLive ? 'This is saved to your SpendGuard backend.' : 'Demo only: this changes a sample record in your browser session.'}
         confirmLabel={pausing ? 'Pause agent' : 'Resume agent'}
       >
         <p className="text-sm text-ink-muted">
@@ -242,7 +287,7 @@ export default function AgentDetailPage() {
         onConfirm={removeRecipient}
         danger
         title="Remove recipient?"
-        description="Demo only."
+        description={isLive ? 'This is saved to your SpendGuard backend.' : 'Demo only.'}
         confirmLabel="Remove"
       >
         <p className="text-sm text-ink-muted">
@@ -250,6 +295,29 @@ export default function AgentDetailPage() {
           Future payments to it will need your approval.
         </p>
       </ConfirmDialog>
+
+      <ConfirmDialog
+        open={confirmRotate}
+        onClose={() => setConfirmRotate(false)}
+        onConfirm={rotateKey}
+        danger
+        title={`Rotate the API key for ${agent.name}?`}
+        description="The current key stops working immediately."
+        confirmLabel="Rotate key"
+      >
+        <p className="text-sm text-ink-muted">
+          A new key is generated and shown once. Update your agent with it right away, or its payment requests will be refused.
+        </p>
+      </ConfirmDialog>
+
+      {issuedKey ? (
+        <ApiKeyDialog
+          apiKey={issuedKey.apiKey}
+          agentName={agent.name}
+          rotated
+          onDone={() => setIssuedKey(null)}
+        />
+      ) : null}
     </PageContainer>
   );
 }

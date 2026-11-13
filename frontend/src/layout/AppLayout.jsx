@@ -1,5 +1,6 @@
 import { Outlet } from 'react-router-dom';
 import Button from '../components/ui/Button.jsx';
+import { useStore } from '../state/DataStore.jsx';
 import { useSettings } from '../state/Settings.jsx';
 import Header from './Header.jsx';
 import MobileNav from './MobileNav.jsx';
@@ -7,7 +8,8 @@ import Sidebar from './Sidebar.jsx';
 
 function PreviewNotice() {
   const { previewState, setPreviewState } = useSettings();
-  if (previewState === 'normal') return null;
+  const { isLive } = useStore();
+  if (previewState === 'normal' || isLive) return null;
   return (
     <div className="flex flex-wrap items-center justify-between gap-2 border-b border-accent-100 bg-accent-50 px-4 py-2 text-sm text-accent-700 sm:px-6 lg:px-8">
       <p>

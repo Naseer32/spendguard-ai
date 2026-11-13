@@ -22,20 +22,5 @@ export function reasonLabel(code) {
   return REASON_INFO[code]?.label ?? String(code);
 }
 
-export const EVENT_INFO = Object.freeze({
-  AGENT_CREATED: 'Agent created',
-  AGENT_LIMITS_UPDATED: 'Limits updated',
-  AGENT_PAUSED: 'Agent paused',
-  AGENT_RESUMED: 'Agent resumed',
-  AGENT_KEY_ROTATED: 'API key rotated',
-  RECIPIENT_ADDED: 'Recipient added',
-  RECIPIENT_UPDATED: 'Recipient updated',
-  RECIPIENT_REMOVED: 'Recipient removed',
-  PAYMENT_EVALUATED: 'Payment evaluated',
-  PAYMENT_APPROVED: 'Payment approved',
-  PAYMENT_REJECTED: 'Payment rejected',
-});
-
-export function eventLabel(code) {
-  return EVENT_INFO[code] ?? String(code);
-}
+// Audit event labels live in lib/audit.js (they follow the backend's event names).
+export { AUDIT_EVENT_CODES, auditEventLabel as eventLabel } from './audit.js';

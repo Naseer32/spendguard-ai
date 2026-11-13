@@ -10,14 +10,14 @@ import PageContainer from '../components/ui/PageContainer.jsx';
 import StatusBadge from '../components/ui/StatusBadge.jsx';
 import ViewBoundary from '../components/ui/ViewBoundary.jsx';
 import { formatDateTime, relativeTime } from '../lib/time.js';
-import { useDemoStore } from '../state/DemoStore.jsx';
+import { useStore } from '../state/DataStore.jsx';
 import { useSettings } from '../state/Settings.jsx';
 
 const byOldest = (a, b) => Date.parse(a.createdAt) - Date.parse(b.createdAt);
 const byDecided = (a, b) => Date.parse(b.decidedAt ?? b.createdAt) - Date.parse(a.decidedAt ?? a.createdAt);
 
 export default function ApprovalsPage() {
-  const { state, agentsById } = useDemoStore();
+  const { state, agentsById, isLive } = useStore();
   const { timeZone } = useSettings();
   const [tab, setTab] = useState('pending');
   const [agentId, setAgentId] = useState('ALL');
@@ -119,7 +119,9 @@ export default function ApprovalsPage() {
       </Card>
 
       <p className="text-xs text-ink-muted">
-        Demo decisions only change sample records in this browser session. No wallet is involved and nothing is signed or sent.
+        {isLive
+          ? 'Decisions are saved to your backend. Approving does not move money: no wallet is involved and nothing is signed or sent from this app.'
+          : 'Demo decisions only change sample records in this browser session. No wallet is involved and nothing is signed or sent.'}
       </p>
 
       <DecisionModal

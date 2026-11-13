@@ -84,8 +84,12 @@ test('source has no secrets, key material or real-network endpoints', () => {
     assert.ok(!/sgk_[0-9a-f]{8}-/.test(text), `${rel}: API key literal`);
     assert.ok(!/\b[0-9a-f]{64}\b/i.test(text), `${rel}: 64-hex literal`);
     assert.ok(!/ed25519:/i.test(text), `${rel}: NEAR key literal`);
-    assert.ok(!/https?:\/\/(?!www\.w3\.org)/.test(text), `${rel}: unexpected network URL`);
-    assert.ok(!/\bfetch\s*\(|XMLHttpRequest|axios|WebSocket/.test(text), `${rel}: network call (no backend integration yet)`);
+    // Only documentation placeholders (api.example.com) and this device are allowed as literal addresses.
+    assert.ok(!/https?:\/\/(?=[a-z0-9[])(?!www\.w3\.org|(?:[a-z0-9-]+\.)?example\.com|localhost|127\.0\.0\.1|\[::1\]|192\.168\.|10\.0\.)/.test(text), `${rel}: unexpected network URL`);
+    // Network access lives in exactly one place: the API client.
+    if (rel !== join('api', 'client.js')) {
+      assert.ok(!/\bfetch\s*\(|XMLHttpRequest|axios|WebSocket|sendBeacon|EventSource/.test(text), `${rel}: network call outside api/client.js`);
+    }
   }
 });
 

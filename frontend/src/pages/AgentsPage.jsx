@@ -12,7 +12,7 @@ import { AgentStatusBadge } from '../components/ui/StatusBadge.jsx';
 import ViewBoundary from '../components/ui/ViewBoundary.jsx';
 import { dailyUsed, dailyUsedPercent } from '../lib/budget.js';
 import { filterAgents, hasActiveFilters } from '../lib/filters.js';
-import { useDemoStore } from '../state/DemoStore.jsx';
+import { useStore } from '../state/DataStore.jsx';
 
 const DEFAULTS = { query: '', status: 'ALL' };
 const STATUS_OPTIONS = [
@@ -22,7 +22,7 @@ const STATUS_OPTIONS = [
 ];
 
 export default function AgentsPage() {
-  const { state } = useDemoStore();
+  const { state } = useStore();
   const navigate = useNavigate();
   const [filters, setFilters] = useState(DEFAULTS);
   const [creating, setCreating] = useState(false);

@@ -12,7 +12,7 @@ import { dailyUsed } from '../lib/budget.js';
 import { percentOf, sumYocto } from '../lib/money.js';
 import { STATUS_META, STATUS_ORDER } from '../lib/status.js';
 import { relativeTime, utcDay } from '../lib/time.js';
-import { useDemoStore } from '../state/DemoStore.jsx';
+import { useStore } from '../state/DataStore.jsx';
 
 function StatusLegend() {
   return (
@@ -31,7 +31,7 @@ function StatusLegend() {
 }
 
 export default function OverviewPage() {
-  const { state, agentsById } = useDemoStore();
+  const { state, agentsById, isLive, requestsTruncated } = useStore();
   const navigate = useNavigate();
   const nowIso = useMemo(() => new Date().toISOString(), []);
 
@@ -71,6 +71,13 @@ export default function OverviewPage() {
   return (
     <PageContainer title="Overview" description="Spending activity and items that need your attention.">
       <DemoBanner />
+      {isLive ? (
+        <p role="note" className="rounded-xl border border-line bg-white px-4 py-3 text-sm text-ink-muted">
+          Live data from your backend. &ldquo;Spent today&rdquo; is worked out from the most recent {state.requests.length} payment
+          requests{requestsTruncated ? ' (older ones are not included)' : ''}, because the backend has no budget-usage figure
+          yet. Wallet signing is not part of this app, so no payment here is paid by approving it.
+        </p>
+      ) : null}
 
       <div className="grid gap-4 sm:grid-cols-2 sm:gap-5 xl:grid-cols-4">
         <StatCard
@@ -88,7 +95,7 @@ export default function OverviewPage() {
           demo
         >
           <div className="mt-3">
-            <ProgressBar percent={percentOf(stats.spent, stats.totalBudget)} label="Daily budget used across active agents (demo)" />
+            <ProgressBar percent={percentOf(stats.spent, stats.totalBudget)} label={`Daily budget used across active agents${isLive ? '' : ' (demo)'}`} />
           </div>
           <p className="mt-1.5 text-xs text-ink-muted">
             Budget across active agents: <Amount yocto={stats.totalBudget} />

@@ -1,14 +1,16 @@
 import { useState } from 'react';
 import { validateRecipientForm } from '../lib/validation.js';
-import { useDemoStore } from '../state/DemoStore.jsx';
+import { useStore } from '../state/DataStore.jsx';
 import { useToast } from '../state/Toasts.jsx';
+import { FormError, useSubmit } from './useSubmit.jsx';
 import Button from './ui/Button.jsx';
 import { SelectField, TextAreaField, TextField } from './ui/Field.jsx';
 import Modal from './ui/Modal.jsx';
 
 function RecipientForm({ agent, onClose }) {
-  const { actions } = useDemoStore();
+  const { actions, isLive } = useStore();
   const notify = useToast();
+  const { busy, serverError, run, fail } = useSubmit();
   const [values, setValues] = useState({ accountId: '', listType: 'ALLOW', note: '' });
   const [errors, setErrors] = useState({});
 
@@ -24,10 +26,16 @@ function RecipientForm({ agent, onClose }) {
       setErrors(result.errors);
       return;
     }
-    if (actions.setRecipient(agent.id, result.value)) {
-      notify(`${result.value.accountId} saved to the ${result.value.listType === 'ALLOW' ? 'allow' : 'block'} list (demo).`);
+    return run(async () => {
+      const r = await actions.setRecipient(agent.id, result.value);
+      if (!r.ok) {
+        if (r.field) setErrors({ [r.field === 'listType' ? 'listType' : 'accountId']: r.error });
+        fail(r.error);
+        return;
+      }
+      notify(`${result.value.accountId} saved to the ${result.value.listType === 'ALLOW' ? 'allow' : 'block'} list${isLive ? '' : ' (demo)'}.`);
       onClose();
-    }
+    });
   }
 
   return (
@@ -35,12 +43,12 @@ function RecipientForm({ agent, onClose }) {
       open
       onClose={onClose}
       title="Add recipient"
-      description={`${agent.name}: demo only. Adding an existing account moves it to the chosen list.`}
+      description={`${agent.name}: ${isLive ? '' : 'demo only. '}Adding an existing account moves it to the chosen list.`}
       footer={
         <>
-          <Button className="w-full sm:w-auto" onClick={onClose}>Cancel</Button>
-          <Button variant="primary" type="submit" form="recipient-form" className="w-full sm:w-auto">
-            Save recipient
+          <Button className="w-full sm:w-auto" onClick={onClose} disabled={busy}>Cancel</Button>
+          <Button variant="primary" type="submit" form="recipient-form" className="w-full sm:w-auto" disabled={busy}>
+            {busy ? 'Saving…' : 'Save recipient'}
           </Button>
         </>
       }
@@ -73,6 +81,7 @@ function RecipientForm({ agent, onClose }) {
           onChange={(e) => set('note', e.target.value)}
           error={errors.note}
         />
+        <FormError message={serverError} />
       </form>
     </Modal>
   );

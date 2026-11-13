@@ -1,3 +1,4 @@
+import { useEffect, useRef, useState } from 'react';
 import Button from './Button.jsx';
 import Modal from './Modal.jsx';
 
@@ -12,6 +13,24 @@ export default function ConfirmDialog({
   onClose,
   children,
 }) {
+  // onConfirm may be async (live backend calls): block repeat clicks until it settles.
+  const [busy, setBusy] = useState(false);
+  const alive = useRef(true);
+  useEffect(() => {
+    alive.current = true;
+    return () => {
+      alive.current = false;
+    };
+  }, []);
+  async function confirm() {
+    if (busy) return;
+    setBusy(true);
+    try {
+      await onConfirm();
+    } finally {
+      if (alive.current) setBusy(false);
+    }
+  }
   return (
     <Modal
       open={open}
@@ -20,15 +39,16 @@ export default function ConfirmDialog({
       description={description}
       footer={
         <>
-          <Button className="w-full sm:w-auto" onClick={onClose}>
+          <Button className="w-full sm:w-auto" onClick={onClose} disabled={busy}>
             Cancel
           </Button>
           <Button
             variant={danger ? 'danger' : 'primary'}
             className="w-full sm:w-auto"
-            onClick={onConfirm}
+            onClick={confirm}
+            disabled={busy}
           >
-            {confirmLabel}
+            {busy ? 'Working…' : confirmLabel}
           </Button>
         </>
       }
