@@ -10,7 +10,7 @@ import {
 // Single source of truth for navigation (sidebar, mobile bar, header title).
 // `shortLabel` keeps the five-tab mobile bar legible on narrow Android screens.
 export const NAV_ITEMS = [
-  { to: '/', label: 'Overview', shortLabel: 'Overview', icon: OverviewIcon, end: true },
+  { to: '/overview', label: 'Overview', shortLabel: 'Overview', icon: OverviewIcon, end: true },
   { to: '/agents', label: 'Agents', shortLabel: 'Agents', icon: AgentsIcon },
   {
     to: '/payment-requests',

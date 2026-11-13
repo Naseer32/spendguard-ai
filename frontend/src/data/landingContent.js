@@ -1,9 +1,9 @@
 // Copy and routes for the marketing landing page (pure data, unit-tested).
 // Only describe what SpendGuard AI actually does; no unverifiable claims.
 
-export const LANDING_ROUTE = '/landing';
-// The existing F2 dashboard lives at the app root (index route in App.jsx).
-export const DASHBOARD_ROUTE = '/';
+export const LANDING_ROUTE = '/';
+// The F2 dashboard Overview page lives at /overview; the landing page is the app root.
+export const DASHBOARD_ROUTE = '/overview';
 
 export const HERO = {
   title: 'Secure every payment made by your AI agents.',
