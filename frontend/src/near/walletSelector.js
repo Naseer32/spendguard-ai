@@ -9,6 +9,7 @@
 // Adapter: { network, init() -> accountId|null, connect() -> accountId, disconnect(),
 //            signTransfer({ receiverId, deposit }) -> FinalExecutionOutcome, onAccountChange(cb) }
 
+import './bufferPolyfill.js';
 import { setupWalletSelector } from '@near-wallet-selector/core';
 import { setupMeteorWallet } from '@near-wallet-selector/meteor-wallet';
 
