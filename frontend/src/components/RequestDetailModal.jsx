@@ -1,6 +1,7 @@
+import { useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { formatDateTime } from '../lib/time.js';
-import { useDemoStore } from '../state/DemoStore.jsx';
+import { useStore } from '../state/DataStore.jsx';
 import { useSettings } from '../state/Settings.jsx';
 import Button from './ui/Button.jsx';
 import { AccountId, Amount, DetailList } from './ui/Display.jsx';
@@ -17,11 +18,21 @@ function recipientStanding(recipients, agentId, account) {
 
 /** Read-only detail view of one payment request. `request` is null when closed. */
 export default function RequestDetailModal({ request, onClose }) {
-  const { state, agentsById } = useDemoStore();
+  const { state, agentsById, isLive, actions } = useStore();
   const { timeZone } = useSettings();
   const navigate = useNavigate();
   const open = request !== null;
   const agent = open ? agentsById[request.agentId] : null;
+
+  const requestId = request?.id;
+  const requestAgentId = request?.agentId;
+  const { loadPayment, loadRecipients } = actions;
+  // Live: open the single payment (adds the approval comment) and the agent's recipient lists.
+  useEffect(() => {
+    if (!isLive || !requestId) return;
+    loadPayment(requestId);
+    loadRecipients(requestAgentId);
+  }, [isLive, requestId, requestAgentId, loadPayment, loadRecipients]);
 
   const events = open
     ? state.audit.filter((e) => e.entityId === request.id).sort((a, b) => a.seq - b.seq)
@@ -33,7 +44,7 @@ export default function RequestDetailModal({ request, onClose }) {
       onClose={onClose}
       size="lg"
       title={open ? `Request ${request.id}` : ''}
-      description="Demo record: sample data, not a real payment."
+      description={isLive ? 'Payment request from your SpendGuard backend.' : 'Demo record: sample data, not a real payment.'}
       footer={
         open ? (
           <>
@@ -100,7 +111,9 @@ export default function RequestDetailModal({ request, onClose }) {
             <h3 id="req-chain" className="text-sm font-semibold text-ink">On-chain status</h3>
             <p className="mt-1 text-sm text-ink-muted">
               {request.status === 'EXECUTED' || request.status === 'SUBMITTED'
-                ? 'No transaction hash is shown. This demo has no wallet or NEAR connection, so nothing here was sent or verified on-chain.'
+                ? isLive
+                  ? 'No transaction hash is shown. This app does not read transaction details from the backend or verify anything on-chain.'
+                  : 'No transaction hash is shown. This demo has no wallet or NEAR connection, so nothing here was sent or verified on-chain.'
                 : 'No transaction exists for this request.'}
             </p>
           </section>

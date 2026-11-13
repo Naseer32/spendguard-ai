@@ -1,5 +1,6 @@
 import { Link, useLocation } from 'react-router-dom';
 import { SettingsIcon } from '../components/ui/Icons.jsx';
+import { useStore } from '../state/DataStore.jsx';
 import Brand from './Brand.jsx';
 import NetworkStatus from './NetworkStatus.jsx';
 import WalletButton from './WalletButton.jsx';
@@ -8,6 +9,7 @@ import { NAV_ITEMS } from './navItems.jsx';
 /** Top bar: brand on mobile, section name on desktop, wallet/network on the right. */
 export default function Header() {
   const { pathname } = useLocation();
+  const { isLive, connection } = useStore();
   const current = NAV_ITEMS.find((i) =>
     i.end ? pathname === i.to : pathname.startsWith(i.to),
   );
@@ -32,10 +34,19 @@ export default function Header() {
           </Link>
         </div>
       </div>
-      {/* Always visible: nothing in this build is real data. */}
-      <div className="border-t border-warning-200 bg-warning-50 px-4 py-1 text-center text-[11px] font-medium text-warning-700 sm:px-6 lg:px-8">
-        Demo mode: sample data only. Not connected to the backend or NEAR Testnet.
-      </div>
+      {/* Always visible: says whether the data on screen is sample data or from the backend. */}
+      {isLive ? (
+        <div
+          role="status"
+          className="border-t border-success-200 bg-success-50 px-4 py-1 text-center text-[11px] font-medium text-success-700 sm:px-6 lg:px-8"
+        >
+          Live: connected to {connection.baseUrl || 'this server'}. Wallet signing is not available in this app.
+        </div>
+      ) : (
+        <div className="border-t border-warning-200 bg-warning-50 px-4 py-1 text-center text-[11px] font-medium text-warning-700 sm:px-6 lg:px-8">
+          Demo mode: sample data only. Not connected to the backend or NEAR Testnet.
+        </div>
+      )}
     </header>
   );
 }

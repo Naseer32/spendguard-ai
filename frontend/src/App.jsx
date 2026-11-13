@@ -7,14 +7,14 @@ import ApprovalsPage from './pages/ApprovalsPage.jsx';
 import OverviewPage from './pages/OverviewPage.jsx';
 import PaymentRequestsPage from './pages/PaymentRequestsPage.jsx';
 import SettingsPage from './pages/SettingsPage.jsx';
-import { DemoStoreProvider } from './state/DemoStore.jsx';
+import { DataStoreProvider } from './state/DataStore.jsx';
 import { SettingsProvider } from './state/Settings.jsx';
 import { ToastProvider } from './state/Toasts.jsx';
 
 export default function App() {
   return (
     <SettingsProvider>
-      <DemoStoreProvider>
+      <DataStoreProvider>
         <ToastProvider>
           <Routes>
             <Route element={<AppLayout />}>
@@ -29,7 +29,7 @@ export default function App() {
             </Route>
           </Routes>
         </ToastProvider>
-      </DemoStoreProvider>
+      </DataStoreProvider>
     </SettingsProvider>
   );
 }

@@ -13,7 +13,7 @@ import { filterRequests, hasActiveFilters, REQUEST_SORTS } from '../lib/filters.
 import { reasonLabel } from '../lib/reasons.js';
 import { REQUEST_STATUS_OPTIONS, STATUS_META } from '../lib/status.js';
 import { relativeTime } from '../lib/time.js';
-import { useDemoStore } from '../state/DemoStore.jsx';
+import { useStore } from '../state/DataStore.jsx';
 
 const DEFAULTS = { query: '', status: 'ALL', agentId: 'ALL', sort: 'newest' };
 
@@ -30,7 +30,7 @@ function initialFilters(search, agentsById) {
 }
 
 export default function PaymentRequestsPage() {
-  const { state, agentsById } = useDemoStore();
+  const { state, agentsById } = useStore();
   const { search } = useLocation();
   const [filters, setFilters] = useState(() => initialFilters(search, agentsById));
   const [selectedId, setSelectedId] = useState(null);

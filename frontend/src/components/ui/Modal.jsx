@@ -7,7 +7,7 @@ import { XIcon } from './Icons.jsx';
  * sheet; from `sm` up it is a centred dialog. Content is only mounted while
  * open, so forms reset every time.
  */
-export default function Modal({ open, onClose, title, description, children, footer, size = 'md' }) {
+export default function Modal({ open, onClose, title, description, children, footer, size = 'md', dismissible = true }) {
   const ref = useRef(null);
   const titleId = useId();
   const descId = useId();
@@ -32,12 +32,16 @@ export default function Modal({ open, onClose, title, description, children, foo
       ref={ref}
       aria-labelledby={titleId}
       aria-describedby={description ? descId : undefined}
+      onCancel={(e) => {
+        // Escape. A non-dismissible dialog (one-time secrets) must be closed by its own button.
+        if (!dismissible) e.preventDefault();
+      }}
       onClose={() => {
         if (open) onClose();
       }}
       onClick={(e) => {
         // A click on the backdrop targets the <dialog> itself.
-        if (e.target === e.currentTarget) onClose();
+        if (dismissible && e.target === e.currentTarget) onClose();
       }}
       className={`m-0 mt-auto max-h-[92dvh] w-full max-w-none overflow-hidden rounded-t-2xl border-0 bg-white p-0 text-ink shadow-2xl backdrop:bg-ink/50 open:flex open:flex-col sm:m-auto sm:max-h-[85dvh] sm:rounded-2xl ${width}`}
     >
@@ -54,6 +58,7 @@ export default function Modal({ open, onClose, title, description, children, foo
                 </p>
               ) : null}
             </div>
+            {dismissible ? (
             <button
               type="button"
               onClick={onClose}
@@ -62,6 +67,7 @@ export default function Modal({ open, onClose, title, description, children, foo
             >
               <XIcon className="h-5 w-5" />
             </button>
+            ) : null}
           </div>
           <div className="min-h-0 flex-1 overflow-y-auto px-5 py-4">{children}</div>
           {footer ? (

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import Button from '../components/ui/Button.jsx';
 import { Card, CardBody, CardHeader } from '../components/ui/Card.jsx';
+import ConnectionCard from '../components/ConnectionCard.jsx';
 import ConfirmDialog from '../components/ui/ConfirmDialog.jsx';
 import { DetailList } from '../components/ui/Display.jsx';
 import { Segmented } from '../components/ui/Filters.jsx';
@@ -8,7 +9,7 @@ import { ShieldIcon, WalletIcon } from '../components/ui/Icons.jsx';
 import PageContainer from '../components/ui/PageContainer.jsx';
 import { APP_INFO } from '../lib/appInfo.js';
 import { formatDateTime } from '../lib/time.js';
-import { useDemoStore } from '../state/DemoStore.jsx';
+import { useStore } from '../state/DataStore.jsx';
 import { useSettings } from '../state/Settings.jsx';
 import { useToast } from '../state/Toasts.jsx';
 
@@ -16,6 +17,7 @@ function Pill({ tone = 'neutral', children }) {
   const tones = {
     neutral: 'bg-surface text-ink-soft ring-line',
     warning: 'bg-warning-50 text-warning-700 ring-warning-200',
+    success: 'bg-success-50 text-success-700 ring-success-200',
   };
   return (
     <span className={`inline-flex rounded-full px-2.5 py-1 text-xs font-semibold leading-none ring-1 ring-inset ${tones[tone]}`}>
@@ -26,7 +28,7 @@ function Pill({ tone = 'neutral', children }) {
 
 export default function SettingsPage() {
   const { timeZone, setTimeZone, previewState, setPreviewState } = useSettings();
-  const { actions } = useDemoStore();
+  const { actions, isLive, connection } = useStore();
   const notify = useToast();
   const [confirmReset, setConfirmReset] = useState(false);
   const sample = '2026-11-10T14:05:00Z';
@@ -34,12 +36,21 @@ export default function SettingsPage() {
   return (
     <PageContainer title="Settings" description="Connections, display preferences and demo tools.">
       <div className="grid gap-5 sm:gap-6 xl:grid-cols-2">
+        <ConnectionCard />
+
         <Card aria-labelledby="set-connections">
           <CardHeader id="set-connections" title="Connections" description="What this app is connected to right now." />
           <CardBody className="space-y-5">
             <DetailList
               items={[
-                { label: 'SpendGuard backend', value: <Pill tone="warning">Not connected (demo data)</Pill> },
+                {
+                  label: 'SpendGuard backend',
+                  value: isLive ? (
+                    <Pill tone="success">Connected: {connection.baseUrl || 'this server'}</Pill>
+                  ) : (
+                    <Pill tone="warning">Not connected (demo data)</Pill>
+                  ),
+                },
                 { label: 'Network', value: `${APP_INFO.network} (display only)` },
                 { label: 'Wallet', value: <Pill>Not connected</Pill> },
               ]}
@@ -75,8 +86,12 @@ export default function SettingsPage() {
         </Card>
 
         <Card aria-labelledby="set-demo">
-          <CardHeader id="set-demo" title="Demo tools" description="Only available in this demo build." />
-          <CardBody className="space-y-5">
+          <CardHeader
+            id="set-demo"
+            title="Demo tools"
+            description={isLive ? 'Unavailable while connected to a backend.' : 'Only available in demo mode.'}
+          />
+          <CardBody className={`space-y-5 ${isLive ? 'pointer-events-none opacity-50' : ''}`} aria-disabled={isLive}>
             <div className="space-y-3">
               <p className="text-sm font-medium text-ink">Preview a page state</p>
               <Segmented
@@ -110,7 +125,8 @@ export default function SettingsPage() {
             <ul className="space-y-3 text-sm text-ink-soft">
               {[
                 'Private keys and seed phrases are never requested, shown or stored here.',
-                'Agent API keys are issued once by the backend and never displayed in this app.',
+                'Agent API keys are issued once by the backend, shown once when created or rotated, and never stored.',
+                'The owner token stays in memory: it is never saved to this browser, put in a URL, or shown again.',
                 'Policy decisions are made by the backend policy engine; the interface only displays them.',
                 'A payment is only shown as Executed after the backend verifies its transaction on-chain.',
               ].map((t) => (
@@ -130,8 +146,13 @@ export default function SettingsPage() {
               items={[
                 { label: 'Application', value: APP_INFO.name },
                 { label: 'Version', value: `${APP_INFO.version} (${APP_INFO.build})` },
-                { label: 'Data source', value: APP_INFO.dataSource },
-                { label: 'Persistence', value: 'None. Reloading the page restores the original demo data.' },
+                { label: 'Data source', value: isLive ? 'SpendGuard backend (live)' : APP_INFO.dataSource },
+                {
+                  label: 'Persistence',
+                  value: isLive
+                    ? 'The backend stores the data. This app keeps only your display settings and the backend address; the owner token is never saved.'
+                    : 'None. Reloading the page restores the original demo data.',
+                },
               ]}
             />
           </CardBody>

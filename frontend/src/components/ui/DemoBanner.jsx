@@ -1,7 +1,10 @@
+import { useStore } from '../../state/DataStore.jsx';
 import { InfoIcon } from './Icons.jsx';
 
 /** Page-level notice that the values shown are sample data. */
 export default function DemoBanner({ children }) {
+  const { isLive } = useStore();
+  if (isLive) return null;
   return (
     <div
       role="note"

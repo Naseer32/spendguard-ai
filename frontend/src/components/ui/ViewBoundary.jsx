@@ -1,3 +1,4 @@
+import { useStore } from '../../state/DataStore.jsx';
 import { useSettings } from '../../state/Settings.jsx';
 import Button from './Button.jsx';
 import { CardBody } from './Card.jsx';
@@ -27,7 +28,22 @@ export default function ViewBoundary({
   onClearFilters,
   children,
 }) {
-  const { previewState, setPreviewState } = useSettings();
+  const settings = useSettings();
+  const { isLive, status, refresh } = useStore();
+  // Live data drives the real loading/error states; the simulated ones are a demo-only tool.
+  const previewState = isLive ? 'normal' : settings.previewState;
+  const setPreviewState = settings.setPreviewState;
+
+  if (isLive && status.phase === 'loading') {
+    return (
+      <CardBody>
+        <LoadingState label={loadingLabel} />
+      </CardBody>
+    );
+  }
+  if (isLive && status.phase === 'error') {
+    return <ErrorState title={errorTitle} message={status.error ?? errorMessage} onRetry={refresh} />;
+  }
 
   if (previewState === 'loading') {
     return (
