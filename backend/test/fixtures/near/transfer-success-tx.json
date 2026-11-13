@@ -1,0 +1,113 @@
+{
+  "jsonrpc": "2.0",
+  "result": {
+    "final_execution_status": "FINAL",
+    "receipts_outcome": [
+      {
+        "block_hash": "Gz8ZM9uMMzE3qCdV3P4RFiaptnFzCYN3hdjQSaVKJoWw",
+        "id": "9tmxpzH1PUynkWWbCUPvKGjiZazabJi1WXwx4q7Cfk6F",
+        "outcome": {
+          "executor_id": "sickzone9097.testnet",
+          "gas_burnt": 223182562500,
+          "logs": [],
+          "metadata": {
+            "contracts": [
+              null
+            ],
+            "gas_profile": [],
+            "version": 4
+          },
+          "receipt_ids": [
+            "CZcqx8QGwgomhkj9WEpukJakzdpXeayiKouRzFQMVSmD"
+          ],
+          "status": {
+            "SuccessValue": ""
+          },
+          "tokens_burnt": "22318256250000000000"
+        },
+        "proof": [
+          {
+            "direction": "Right",
+            "hash": "JBRe4P6n9yFQ7rR1PCvigr2BA9mrTZYUAYi21bCgAxdD"
+          }
+        ]
+      },
+      {
+        "block_hash": "8B9MBwhdfyvg2Z9vRXUHNZwuGZP31qENQGWt2aPZuTxR",
+        "id": "CZcqx8QGwgomhkj9WEpukJakzdpXeayiKouRzFQMVSmD",
+        "outcome": {
+          "executor_id": "steephat8707.testnet",
+          "gas_burnt": 223182562500,
+          "logs": [],
+          "metadata": {
+            "contracts": [
+              null
+            ],
+            "gas_profile": [],
+            "version": 4
+          },
+          "receipt_ids": [],
+          "status": {
+            "SuccessValue": ""
+          },
+          "tokens_burnt": "0"
+        },
+        "proof": []
+      }
+    ],
+    "status": {
+      "SuccessValue": ""
+    },
+    "transaction": {
+      "actions": [
+        {
+          "Transfer": {
+            "deposit": "100000000000000000000000"
+          }
+        }
+      ],
+      "hash": "4yxED39oZ2toc5GTDpjzVHscTJnXiKZQ4t4HRQKPkHfM",
+      "nonce": 276875738000001,
+      "priority_fee": 0,
+      "public_key": "ed25519:6j9MeiC1njrFf8xYopMneXnaAZwtix6n5DVEJYGHCQh8",
+      "receiver_id": "sickzone9097.testnet",
+      "signature": "ed25519:JEeJ1nGpu7mhwKQsd9nqq9PGptxyfJ9E6Xr81N2u3DwvUQeuAxp3AxhztP4qkvCAby6oRqEJnNY6tfd9xhtZ7rj",
+      "signer_id": "steephat8707.testnet"
+    },
+    "transaction_outcome": {
+      "block_hash": "12E4MqAhaRrzvbZhiB1EaUVHJhrhAbdAhJgf73YzzRru",
+      "id": "4yxED39oZ2toc5GTDpjzVHscTJnXiKZQ4t4HRQKPkHfM",
+      "outcome": {
+        "executor_id": "steephat8707.testnet",
+        "gas_burnt": 223182562500,
+        "logs": [],
+        "metadata": {
+          "gas_profile": null,
+          "version": 1
+        },
+        "receipt_ids": [
+          "9tmxpzH1PUynkWWbCUPvKGjiZazabJi1WXwx4q7Cfk6F"
+        ],
+        "status": {
+          "SuccessReceiptId": "9tmxpzH1PUynkWWbCUPvKGjiZazabJi1WXwx4q7Cfk6F"
+        },
+        "tokens_burnt": "22318256250000000000"
+      },
+      "proof": [
+        {
+          "direction": "Right",
+          "hash": "FFta7SnSLqatuLnsvyG7xhz7S4tSvEyaGpi51KwrbLcx"
+        },
+        {
+          "direction": "Right",
+          "hash": "GSFmFME4zxsCdjjnKzrCnjv8hKADcz8EEhBAgopz4oKm"
+        },
+        {
+          "direction": "Right",
+          "hash": "8QxcmCR59JYjSaSrUQQVTGBEneCp4EQzLjHBGEazyJye"
+        }
+      ]
+    }
+  },
+  "id": "1"
+}
