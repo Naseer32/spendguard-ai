@@ -4,6 +4,7 @@ import ActivityPage from './pages/ActivityPage.jsx';
 import AgentDetailPage from './pages/AgentDetailPage.jsx';
 import AgentsPage from './pages/AgentsPage.jsx';
 import ApprovalsPage from './pages/ApprovalsPage.jsx';
+import LandingPage from './pages/LandingPage.jsx';
 import OverviewPage from './pages/OverviewPage.jsx';
 import PaymentRequestsPage from './pages/PaymentRequestsPage.jsx';
 import SettingsPage from './pages/SettingsPage.jsx';
@@ -17,6 +18,7 @@ export default function App() {
       <DataStoreProvider>
         <ToastProvider>
           <Routes>
+            <Route path="landing" element={<LandingPage />} />
             <Route element={<AppLayout />}>
               <Route index element={<OverviewPage />} />
               <Route path="agents" element={<AgentsPage />} />
