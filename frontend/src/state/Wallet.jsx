@@ -20,7 +20,7 @@ export function WalletProvider({ children }) {
       accountId: snapshot.accountId,
       error: snapshot.error,
       network: snapshot.network,
-      connect: controller.connect,
+      connect: async () => { await controller.connect(); const s = controller.getSnapshot(); if (s.error) window.alert(s.error); },
       disconnect: controller.disconnect,
       signTransfer: controller.signTransfer,
     }),
