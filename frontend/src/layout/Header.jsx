@@ -40,7 +40,7 @@ export default function Header() {
           role="status"
           className="border-t border-success-200 bg-success-50 px-4 py-1.5 text-center text-[11px] font-medium leading-snug text-success-700 sm:text-xs sm:px-6 lg:px-8"
         >
-          Live: connected to {connection.baseUrl || 'this server'}. Wallet signing is not available in this app.
+          Live: connected to {connection.baseUrl || 'this server'}. Payments are signed in your NEAR Testnet wallet and verified by the backend.
         </div>
       ) : (
         <div className="border-t border-warning-200 bg-warning-50 px-4 py-1.5 text-center text-[11px] font-medium leading-snug text-warning-700 sm:text-xs sm:px-6 lg:px-8">
