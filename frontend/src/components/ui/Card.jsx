@@ -2,7 +2,7 @@ import { useStore } from '../../state/DataStore.jsx';
 export function Card({ as: Tag = 'section', className = '', children, ...rest }) {
   return (
     <Tag
-      className={`rounded-xl border border-line bg-white shadow-card ${className}`}
+      className={`rounded-2xl border border-line bg-white shadow-card ${className}`}
       {...rest}
     >
       {children}
@@ -12,9 +12,9 @@ export function Card({ as: Tag = 'section', className = '', children, ...rest })
 
 export function CardHeader({ title, description, action, id }) {
   return (
-    <div className="flex flex-wrap items-start justify-between gap-3 border-b border-line px-4 py-4 sm:px-5">
+    <div className="flex flex-wrap items-start justify-between gap-3 border-b border-line px-4 py-3.5 sm:px-5 sm:py-4">
       <div className="min-w-0">
-        <h2 id={id} className="text-base font-semibold text-ink">
+        <h2 id={id} className="text-base font-semibold tracking-tight text-ink">
           {title}
         </h2>
         {description ? (
@@ -48,12 +48,12 @@ export function StatCard({ label, value, hint, icon: Ic, demo = false, children 
   return (
     <Card className="p-4 sm:p-5">
       <div className="flex items-start justify-between gap-3">
-        <p className="text-sm font-medium text-ink-soft">{label}</p>
-        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-accent-50 text-accent-600">
+        <p className="text-xs font-semibold uppercase tracking-wide text-ink-muted">{label}</p>
+        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-accent-50 text-accent-600 ring-1 ring-inset ring-accent-100">
           {Ic ? <Ic className="h-5 w-5" /> : null}
         </span>
       </div>
-      <p className="mt-3 text-3xl font-semibold tracking-tight text-ink">{value}</p>
+      <p className="mt-3 text-2xl font-semibold tabular-nums tracking-tight text-ink sm:text-3xl">{value}</p>
       <div className="mt-1 flex items-center gap-2">
         {demo ? <DemoTag /> : null}
         {hint ? <p className="text-sm text-ink-muted">{hint}</p> : null}

@@ -1,6 +1,6 @@
 const VARIANTS = {
   primary:
-    'bg-accent-600 text-white hover:bg-accent-700 disabled:bg-surface-strong disabled:text-ink-muted',
+    'bg-accent-600 text-white shadow-sm hover:bg-accent-700 disabled:bg-surface-strong disabled:text-ink-muted disabled:shadow-none',
   secondary:
     'bg-white text-ink ring-1 ring-inset ring-line hover:bg-surface disabled:bg-surface disabled:text-ink-muted',
   ghost: 'text-ink-soft hover:bg-surface disabled:text-ink-muted',
@@ -13,8 +13,8 @@ const VARIANTS = {
 };
 
 const SIZES = {
-  md: 'min-h-10 px-4 text-sm',
-  sm: 'min-h-9 px-3 text-sm',
+  md: 'min-h-11 px-4 text-sm sm:min-h-10',
+  sm: 'min-h-10 px-3 text-sm sm:min-h-9',
   lg: 'min-h-11 px-5 text-sm',
 };
 
@@ -29,7 +29,7 @@ export default function Button({
   return (
     <button
       type={type}
-      className={`inline-flex items-center justify-center gap-2 rounded-lg font-medium transition-colors disabled:cursor-not-allowed ${VARIANTS[variant]} ${SIZES[size]} ${className}`}
+      className={`inline-flex items-center justify-center gap-2 rounded-lg font-medium transition-colors active:translate-y-px disabled:cursor-not-allowed ${VARIANTS[variant]} ${SIZES[size]} ${className}`}
       {...rest}
     >
       {children}

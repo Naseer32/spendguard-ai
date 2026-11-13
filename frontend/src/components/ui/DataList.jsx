@@ -29,7 +29,7 @@ export default function DataList({ rows, getKey, columns, renderCard, onOpen, ca
             <tr
               key={getKey(row)}
               onClick={onOpen ? () => onOpen(row) : undefined}
-              className={onOpen ? 'cursor-pointer hover:bg-surface/70' : undefined}
+              className={onOpen ? 'cursor-pointer hover:bg-accent-50/40' : undefined}
             >
               {columns.map((c, i) => (
                 <td
@@ -64,7 +64,7 @@ export default function DataList({ rows, getKey, columns, renderCard, onOpen, ca
               <button
                 type="button"
                 onClick={() => onOpen(row)}
-                className="block w-full px-4 py-3.5 text-left active:bg-surface"
+                className="block w-full px-4 py-3.5 text-left active:bg-accent-50/60"
               >
                 {renderCard(row)}
               </button>
