@@ -10,7 +10,7 @@ export default function MobileNav() {
   return (
     <nav
       aria-label="Primary"
-      className="fixed inset-x-0 bottom-0 z-40 border-t border-line bg-white pb-[env(safe-area-inset-bottom)] lg:hidden"
+      className="fixed inset-x-0 bottom-0 z-40 border-t border-line bg-white/95 pb-[env(safe-area-inset-bottom)] shadow-[0_-8px_24px_-14px_rgb(11_31_58/0.3)] backdrop-blur lg:hidden"
     >
       <ul className="grid grid-cols-5">
         {TAB_ITEMS.map(({ to, shortLabel, icon: Ic, end }) => (
@@ -20,7 +20,7 @@ export default function MobileNav() {
               end={end}
               className={({ isActive }) =>
                 `relative flex min-h-14 flex-col items-center justify-center gap-0.5 px-1 text-[11px] font-medium transition-colors ${
-                  isActive ? 'text-accent-700' : 'text-ink-muted'
+                  isActive ? 'text-accent-700' : 'text-ink-muted active:text-ink'
                 }`
               }
             >

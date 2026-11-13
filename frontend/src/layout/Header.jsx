@@ -15,7 +15,7 @@ export default function Header() {
   );
 
   return (
-    <header className="sticky top-0 z-30 border-b border-line bg-white/95 pt-[env(safe-area-inset-top)] backdrop-blur">
+    <header className="sticky top-0 z-30 border-b border-line bg-white/90 pt-[env(safe-area-inset-top)] shadow-[0_1px_0_rgb(11_31_58/0.02)] backdrop-blur-md">
       <div className="flex h-14 items-center justify-between gap-3 px-4 sm:px-6 lg:h-16 lg:px-8">
         <Brand className="lg:hidden" />
         <p className="hidden text-sm font-medium text-ink-muted lg:block">
@@ -28,7 +28,7 @@ export default function Header() {
           <Link
             to="/settings"
             aria-label="Settings"
-            className="flex h-10 w-10 items-center justify-center rounded-lg text-ink-soft hover:bg-surface lg:hidden"
+            className="flex h-10 w-10 items-center justify-center rounded-lg text-ink-soft hover:bg-surface active:bg-surface-strong lg:hidden"
           >
             <SettingsIcon className="h-5 w-5" />
           </Link>
@@ -38,12 +38,12 @@ export default function Header() {
       {isLive ? (
         <div
           role="status"
-          className="border-t border-success-200 bg-success-50 px-4 py-1 text-center text-[11px] font-medium text-success-700 sm:px-6 lg:px-8"
+          className="border-t border-success-200 bg-success-50 px-4 py-1.5 text-center text-[11px] font-medium leading-snug text-success-700 sm:text-xs sm:px-6 lg:px-8"
         >
           Live: connected to {connection.baseUrl || 'this server'}. Wallet signing is not available in this app.
         </div>
       ) : (
-        <div className="border-t border-warning-200 bg-warning-50 px-4 py-1 text-center text-[11px] font-medium text-warning-700 sm:px-6 lg:px-8">
+        <div className="border-t border-warning-200 bg-warning-50 px-4 py-1.5 text-center text-[11px] font-medium leading-snug text-warning-700 sm:text-xs sm:px-6 lg:px-8">
           Demo mode: sample data only. Not connected to the backend or NEAR Testnet.
         </div>
       )}
