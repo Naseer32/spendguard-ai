@@ -42,12 +42,12 @@ test('copy makes no unverifiable security claims', () => {
 });
 
 test('landing is a separate route and the dashboard routes are intact', () => {
-  assert.equal(LANDING_ROUTE, '/landing');
-  assert.equal(DASHBOARD_ROUTE, '/');
-  assert.match(app, /path="landing"/);
+  assert.equal(LANDING_ROUTE, '/');
+  assert.equal(DASHBOARD_ROUTE, '/overview');
+  assert.match(app, /<Route index element={<LandingPage \/>} \/>/);
   // landing sits outside the dashboard layout route
-  assert.ok(app.indexOf('path="landing"') < app.indexOf('<Route element={<AppLayout />}>'));
-  assert.match(app, /<Route index element={<OverviewPage \/>} \/>/);
+  assert.ok(app.indexOf('<LandingPage />') < app.indexOf('<Route element={<AppLayout />}>'));
+  assert.match(app, /<Route path="overview" element={<OverviewPage \/>} \/>/);
   for (const p of ['agents', 'agents/:agentId', 'payment-requests', 'approvals', 'activity', 'settings']) {
     assert.ok(app.includes(`path="${p}"`), `missing dashboard route ${p}`);
   }
@@ -62,4 +62,11 @@ test('landing page CTA links to the dashboard route and embeds the real Overview
 test('preview gets its own demo-mode store so it never shows live data', () => {
   assert.match(page, /import \{ DataStoreProvider \} from '\.\.\/state\/DataStore\.jsx'/);
   assert.match(page, /<DataStoreProvider>\s*<OverviewPage \/>\s*<\/DataStoreProvider>/);
+});
+
+test('old /landing URL redirects home, unknown URLs still reach the dashboard, nav points at /overview', () => {
+  const nav = readFileSync(new URL('../layout/navItems.jsx', import.meta.url), 'utf8');
+  assert.match(app, /path="landing" element={<Navigate to="\/" replace \/>}/);
+  assert.match(app, /path="\*" element={<Navigate to="\/overview" replace \/>}/);
+  assert.match(nav, /to: '\/overview', label: 'Overview'/);
 });

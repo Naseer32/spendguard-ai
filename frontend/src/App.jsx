@@ -18,16 +18,17 @@ export default function App() {
       <DataStoreProvider>
         <ToastProvider>
           <Routes>
-            <Route path="landing" element={<LandingPage />} />
+            <Route index element={<LandingPage />} />
+            <Route path="landing" element={<Navigate to="/" replace />} />
             <Route element={<AppLayout />}>
-              <Route index element={<OverviewPage />} />
+              <Route path="overview" element={<OverviewPage />} />
               <Route path="agents" element={<AgentsPage />} />
               <Route path="agents/:agentId" element={<AgentDetailPage />} />
               <Route path="payment-requests" element={<PaymentRequestsPage />} />
               <Route path="approvals" element={<ApprovalsPage />} />
               <Route path="activity" element={<ActivityPage />} />
               <Route path="settings" element={<SettingsPage />} />
-              <Route path="*" element={<Navigate to="/" replace />} />
+              <Route path="*" element={<Navigate to="/overview" replace />} />
             </Route>
           </Routes>
         </ToastProvider>
