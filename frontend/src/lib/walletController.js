@@ -65,7 +65,7 @@ export function createWalletController(loadAdapter) {
         set({
           status: 'disconnected',
           accountId: null,
-          error: kind === 'rejected' ? 'Connection cancelled in the wallet.' : 'Could not connect to the wallet.',
+          error: kind === 'rejected' ? 'Connection cancelled in the wallet.' : 'Could not connect to the wallet: ' + String(error?.message ?? error).slice(0, 140),
         });
       }
     },
