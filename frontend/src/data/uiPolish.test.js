@@ -35,7 +35,7 @@ test('header keeps both the Live and Demo status banners with their original tex
   const h = read('../layout/Header.jsx');
   assert.match(h, /Demo mode: sample data only\. Not connected to the backend or NEAR Testnet\./);
   assert.match(h, /Live: connected to \{connection\.baseUrl/);
-  assert.match(h, /Wallet signing is not available in this app\./);
+  assert.match(h, /Payments are signed in your NEAR Testnet wallet and verified by the backend\./);
 });
 
 test('shared display helpers keep their accessibility roles', () => {
