@@ -9,6 +9,7 @@ import { DemoTag } from './ui/Card.jsx';
 import Modal from './ui/Modal.jsx';
 import StatusBadge from './ui/StatusBadge.jsx';
 import ReasonList from './ReasonList.jsx';
+import SignPanel from './SignPanel.jsx';
 
 function recipientStanding(recipients, agentId, account) {
   const row = recipients.find((r) => r.agentId === agentId && r.accountId === account);
@@ -17,8 +18,10 @@ function recipientStanding(recipients, agentId, account) {
 }
 
 /** Read-only detail view of one payment request. `request` is null when closed. */
-export default function RequestDetailModal({ request, onClose }) {
+export default function RequestDetailModal({ request: requestProp, onClose }) {
   const { state, agentsById, isLive, actions } = useStore();
+  // Always show the store's copy, so a status the backend just changed is the one the owner sees.
+  const request = requestProp === null ? null : (state.requests.find((r) => r.id === requestProp.id) ?? requestProp);
   const { timeZone } = useSettings();
   const navigate = useNavigate();
   const open = request !== null;
@@ -107,12 +110,14 @@ export default function RequestDetailModal({ request, onClose }) {
             </div>
           </section>
 
+          <SignPanel key={request.id} request={request} agent={agent} />
+
           <section aria-labelledby="req-chain" className="rounded-lg bg-surface px-4 py-3">
             <h3 id="req-chain" className="text-sm font-semibold text-ink">On-chain status</h3>
             <p className="mt-1 text-sm text-ink-muted">
               {request.status === 'EXECUTED' || request.status === 'SUBMITTED'
                 ? isLive
-                  ? 'No transaction hash is shown. This app does not read transaction details from the backend or verify anything on-chain.'
+                  ? 'No transaction hash is shown here. The backend verifies the transaction on-chain; this app only shows the status the backend reports.'
                   : 'No transaction hash is shown. This demo has no wallet or NEAR connection, so nothing here was sent or verified on-chain.'
                 : 'No transaction exists for this request.'}
             </p>

@@ -14,11 +14,11 @@
 //   GET    /api/payments?agentId&status&limit           owner
 //   GET    /api/payments/:requestId                     owner  -> { payment, approval }
 //   POST   /api/payments/:requestId/approve | reject    owner
+//   POST   /api/payments/:requestId/tx-report           owner  { txHash, signerId } -> { verdict, action, reason, payment }
 //   GET    /api/audit?afterSeq&limit&event&entityId     owner
 //   GET    /api/audit/verify                            owner
 //
-// Not used by this app yet: POST /api/payments/:id/cancel, POST
-// /api/payments/:id/tx-report (needs wallet signing), GET /api/audit/head,
+// Not used by this app yet: POST /api/payments/:id/cancel, GET /api/audit/head,
 // and the agent-key routes under /api/v1 (those are for agents, not the owner).
 
 import { ApiError } from './errors.js';
@@ -145,6 +145,24 @@ export function createEndpoints(client) {
         body: present({ comment }),
       });
       return { payment: mapPayment(data?.payment) };
+    },
+
+    /**
+     * Report the NEAR transaction that paid an APPROVED request. The body is exactly { txHash, signerId }.
+     * The backend verifies it on-chain and answers 200 with its verdict; the returned payment is the only
+     * source of truth for the new status. Reporting the same hash again retries the verification.
+     */
+    async reportTransaction(requestId, { txHash, signerId }) {
+      const data = await call('POST', `/api/payments/${uuid('requestId', requestId)}/tx-report`, {
+        body: { txHash, signerId },
+      });
+      if (typeof data?.verdict !== 'string') throw new ApiError('shape', 'Unexpected transaction report in the backend response.');
+      return {
+        verdict: data.verdict,
+        action: typeof data.action === 'string' ? data.action : null,
+        reason: typeof data.reason === 'string' ? data.reason : null,
+        payment: mapPayment(data.payment),
+      };
     },
 
     /** Entries come back oldest-first from afterSeq. `head.seq` is the newest sequence number. */

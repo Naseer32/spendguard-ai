@@ -63,6 +63,7 @@ function failure(error) {
     kind: error instanceof ApiError ? error.kind : 'unknown',
     field: error instanceof ApiError ? error.field : null,
     status: error instanceof ApiError ? error.status : null,
+    code: error instanceof ApiError ? (error.code ?? null) : null,
     // Sent by the backend when an approval is refused (409): why the policy no longer passes.
     refusalReasons:
       error instanceof ApiError && Array.isArray(error.data?.refusalReasons)
@@ -322,6 +323,23 @@ export function DataStoreProvider({ children, initialDemoState }) {
           applyLive(gen, (l) => ({ ...l, requests: upsertById(l.requests, payment) }));
           refreshAudit(gen);
           return { ok: true };
+        });
+      },
+
+      /**
+       * Live only. Reports the wallet transaction to the backend and returns its verdict. The payment
+       * status always comes from the backend response; it is never set here.
+       */
+      async reportTransaction(requestId, { txHash, signerId }) {
+        if (!isLive) return { ok: false, kind: 'demo', error: 'Demo mode has no wallet or NEAR connection.' };
+        return withApi(async (api, gen) => {
+          const out = await api.reportTransaction(requestId, { txHash, signerId });
+          applyLive(gen, (l) => {
+            const prev = l.requests.find((r) => r.id === out.payment.id);
+            return { ...l, requests: upsertById(l.requests, { ...out.payment, decisionComment: prev?.decisionComment ?? null }) };
+          });
+          refreshAudit(gen);
+          return { ok: true, verdict: out.verdict, action: out.action, reason: out.reason, payment: out.payment };
         });
       },
 
