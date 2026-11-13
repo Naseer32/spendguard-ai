@@ -40,7 +40,8 @@
   --color-warning-600: #c77a0a;
   --color-warning-700: #8f5606;
 
-  --shadow-card: 0 1px 2px rgb(11 31 58 / 0.04), 0 1px 3px rgb(11 31 58 / 0.04);
+  --shadow-card: 0 1px 2px rgb(11 31 58 / 0.05), 0 4px 12px -6px rgb(11 31 58 / 0.10);
+  --shadow-pop: 0 24px 48px -24px rgb(11 31 58 / 0.35), 0 8px 16px -8px rgb(11 31 58 / 0.12);
 }
 
 @layer base {
@@ -68,4 +69,19 @@
     animation-duration: 0.01ms !important;
     transition-duration: 0.01ms !important;
   }
+}
+
+@layer base {
+  h1, h2, h3 { text-wrap: balance; }
+  ::selection { background: var(--color-accent-100); color: var(--color-ink); }
+}
+
+/* Decorative grid for the landing hero (CSS only). */
+.landing-grid {
+  background-image:
+    linear-gradient(var(--color-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--color-line) 1px, transparent 1px);
+  background-size: 40px 40px;
+  -webkit-mask-image: radial-gradient(ellipse at top, #000 15%, transparent 70%);
+  mask-image: radial-gradient(ellipse at top, #000 15%, transparent 70%);
 }
