@@ -30,3 +30,16 @@ test('design tokens define the shadows the UI uses', () => {
   assert.match(css, /--shadow-card:/);
   assert.match(css, /--shadow-pop:/);
 });
+
+test('header keeps both the Live and Demo status banners with their original text', () => {
+  const h = read('../layout/Header.jsx');
+  assert.match(h, /Demo mode: sample data only\. Not connected to the backend or NEAR Testnet\./);
+  assert.match(h, /Live: connected to \{connection\.baseUrl/);
+  assert.match(h, /Wallet signing is not available in this app\./);
+});
+
+test('shared display helpers keep their accessibility roles', () => {
+  const d = read('../components/ui/Display.jsx');
+  assert.match(d, /role="progressbar"/);
+  assert.match(d, /aria-valuenow=\{percent\}/);
+});
