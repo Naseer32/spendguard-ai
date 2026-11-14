@@ -80,7 +80,7 @@ function DecisionForm({ request, decision, onClose }) {
         <p className="text-sm text-ink-muted">
           {approve
             ? isLive
-              ? 'Approving makes the backend re-check the policy against current limits and budget. It does not move money: the transfer is signed in your own wallet, and a payment only becomes Executed after it is verified on-chain. Wallet signing is not part of this app yet.'
+              ? 'Approving makes the backend re-check the policy against current limits and budget. It does not move money: the transfer is signed in your own wallet, and a payment only becomes Executed after it is verified on-chain.'
               : 'In the real product, approving makes the backend re-check the policy against current limits and budget. You then sign the transfer in your own wallet, and the payment only becomes Executed after it is verified on-chain. None of that happens in this demo.'
             : 'Rejecting closes the request. The agent is told it was not approved.'}
         </p>

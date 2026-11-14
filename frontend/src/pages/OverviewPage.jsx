@@ -75,7 +75,7 @@ export default function OverviewPage() {
         <p role="note" className="rounded-xl border border-line bg-white px-4 py-3 text-sm text-ink-muted">
           Live data from your backend. &ldquo;Spent today&rdquo; is worked out from the most recent {state.requests.length} payment
           requests{requestsTruncated ? ' (older ones are not included)' : ''}, because the backend has no budget-usage figure
-          yet. Wallet signing is not part of this app, so no payment here is paid by approving it.
+          yet. Approving a request does not pay it by itself: payments are signed in your NEAR Testnet wallet.
         </p>
       ) : null}
 

@@ -79,3 +79,11 @@ test('header cannot grow wider than a phone screen when a wallet is connected', 
   assert.match(read('../layout/WalletButton.jsx'), /max-w-\[5rem\] truncate/);
   assert.match(read('../layout/AppLayout.jsx'), /overflow-x-clip/);
 });
+
+test('Live-mode copy no longer claims wallet signing is missing', () => {
+  for (const f of ['../pages/ApprovalsPage.jsx', '../pages/OverviewPage.jsx', '../components/DecisionModal.jsx', '../layout/Sidebar.jsx']) {
+    const t = read(f);
+    assert.ok(!/not part of this app/.test(t), `stale copy in ${f}`);
+    assert.ok(!/No wallet signing/.test(t), `stale copy in ${f}`);
+  }
+});

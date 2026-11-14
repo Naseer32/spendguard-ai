@@ -120,7 +120,7 @@ export default function ApprovalsPage() {
 
       <p className="text-xs text-ink-muted">
         {isLive
-          ? 'Decisions are saved to your backend. Approving does not move money: no wallet is involved and nothing is signed or sent from this app.'
+          ? 'Decisions are saved to your backend. Approving does not move money by itself: a payment is only sent when it is signed in your NEAR Testnet wallet, and it becomes Executed only after it is verified on-chain.'
           : 'Demo decisions only change sample records in this browser session. No wallet is involved and nothing is signed or sent.'}
       </p>
 

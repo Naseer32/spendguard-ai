@@ -38,7 +38,7 @@ export default function Sidebar() {
 
       <div className="m-3 rounded-xl border border-line bg-surface px-4 py-3 text-xs text-ink-muted">
         <p className="flex items-center gap-1.5 font-medium text-ink-soft"><span className={`h-2 w-2 rounded-full ${isLive ? 'bg-success-600' : 'bg-warning-600'}`} />{isLive ? 'Live' : APP_INFO.build} · v{APP_INFO.version}</p>
-        <p className="mt-0.5">{isLive ? 'Connected to your backend. No wallet signing.' : 'Sample data only. Not connected to a backend.'}</p>
+        <p className="mt-0.5">{isLive ? 'Connected to your backend. Payments are signed in your wallet.' : 'Sample data only. Not connected to a backend.'}</p>
       </div>
     </aside>
   );
