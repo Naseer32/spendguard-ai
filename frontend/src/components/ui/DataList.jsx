@@ -12,7 +12,7 @@ export default function DataList({ rows, getKey, columns, renderCard, onOpen, ca
       <table className="hidden w-full text-left text-sm md:table">
         <caption className="sr-only">{caption}</caption>
         <thead>
-          <tr className="border-b border-line text-xs uppercase tracking-wide text-ink-muted">
+          <tr className="border-b border-line bg-surface/60 text-[11px] uppercase tracking-wider text-ink-muted">
             {columns.map((c, i) => (
               <th
                 key={c.key}
@@ -24,7 +24,7 @@ export default function DataList({ rows, getKey, columns, renderCard, onOpen, ca
             ))}
           </tr>
         </thead>
-        <tbody className="divide-y divide-line">
+        <tbody className="divide-y divide-line/70">
           {rows.map((row) => (
             <tr
               key={getKey(row)}
@@ -34,7 +34,7 @@ export default function DataList({ rows, getKey, columns, renderCard, onOpen, ca
               {columns.map((c, i) => (
                 <td
                   key={c.key}
-                  className={`py-3.5 align-middle ${i === 0 ? 'pl-5 pr-3' : i === columns.length - 1 ? 'pl-3 pr-5' : 'px-3'} ${c.align === 'right' ? 'text-right' : ''} ${c.className ?? ''}`}
+                  className={`py-4 align-middle ${i === 0 ? 'pl-5 pr-3' : i === columns.length - 1 ? 'pl-3 pr-5' : 'px-3'} ${c.align === 'right' ? 'text-right' : ''} ${c.className ?? ''}`}
                 >
                   {i === 0 && onOpen ? (
                     <button

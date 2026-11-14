@@ -4,7 +4,7 @@ export default function PageContainer({ title, description, actions, children })
     <div className="mx-auto w-full max-w-7xl px-4 py-5 sm:px-6 sm:py-6 lg:px-8 lg:py-8">
       <div className="mb-5 flex flex-wrap items-end justify-between gap-3 sm:mb-7">
         <div className="min-w-0">
-          <h1 className="text-[26px] font-semibold leading-tight tracking-tight text-ink sm:text-3xl">
+          <h1 className="text-[28px] font-semibold leading-tight tracking-[-0.02em] text-ink sm:text-4xl">
             {title}
           </h1>
           {description ? (

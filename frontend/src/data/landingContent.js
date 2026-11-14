@@ -62,3 +62,10 @@ export const SECURITY = [
 
 export const PREVIEW_NOTE =
   'This preview is the real dashboard running on clearly labelled sample data.';
+
+export const FAQ = [
+  { q: 'Is this real money?', a: 'No. SpendGuard AI runs on NEAR Testnet, and the demo uses sample data.' },
+  { q: 'Can an agent pay without my approval?', a: 'Requests over your approval threshold wait for you to approve or reject them. Your limits apply to every request.' },
+  { q: 'Do I need a wallet to try it?', a: 'Not for the demo, which runs on sample data in your browser. Payments are signed in your NEAR Testnet wallet.' },
+  { q: 'What does the demo show?', a: 'Clearly labelled sample agents, requests and audit entries. Nothing leaves your browser in demo mode.' },
+];

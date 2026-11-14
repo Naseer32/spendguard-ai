@@ -43,3 +43,18 @@ test('shared display helpers keep their accessibility roles', () => {
   assert.match(d, /role="progressbar"/);
   assert.match(d, /aria-valuenow=\{percent\}/);
 });
+
+test('Inter is actually loaded, and page titles use the larger editorial size', () => {
+  const html = readFileSync(new URL('../../index.html', import.meta.url), 'utf8');
+  assert.match(html, /family=Inter/);
+  assert.match(read('../components/ui/PageContainer.jsx'), /sm:text-4xl/);
+});
+
+test('landing FAQ makes no unverifiable claims', async () => {
+  const { FAQ } = await import('./landingContent.js');
+  assert.ok(FAQ.length >= 3);
+  const text = JSON.stringify(FAQ).toLowerCase();
+  for (const banned of ['audited', 'bank-grade', 'unhackable', '100%', 'guarantee', 'mainnet', 'insured']) {
+    assert.ok(!text.includes(banned), `banned claim: ${banned}`);
+  }
+});
