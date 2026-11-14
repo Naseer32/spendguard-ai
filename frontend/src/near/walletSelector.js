@@ -45,7 +45,9 @@ export async function createSelectorAdapter() {
       return wallet.signAndSendTransaction({
         signerId: activeAccount() ?? undefined,
         receiverId,
-        actions: [{ type: 'Transfer', params: { deposit } }],
+        // Wallet Selector 10 hands Meteor near-api-js style actions ({ transfer: { deposit } }), not the
+        // older { type, params } shape (that one fails with "Unsupported NAJ action").
+        actions: [{ transfer: { deposit: BigInt(deposit) } }],
       });
     },
 
