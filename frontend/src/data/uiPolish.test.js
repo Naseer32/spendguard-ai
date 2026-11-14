@@ -64,3 +64,9 @@ test('metric cards use the larger numeric treatment', () => {
   assert.match(c, /sm:text-4xl/);
   assert.match(c, /<Card className="p-5 sm:p-6">/);
 });
+
+test('overview keeps its demo labelling after the visual redesign', () => {
+  assert.match(read('../pages/OverviewPage.jsx'), /<DemoBanner \/>/);
+  assert.match(read('../components/ui/DemoBanner.jsx'), /Demo data\./);
+  assert.match(read('../layout/AppLayout.jsx'), /linear-gradient\(to_bottom/);
+});

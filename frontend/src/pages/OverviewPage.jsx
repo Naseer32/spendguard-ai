@@ -20,7 +20,7 @@ function StatusLegend() {
       <CardHeader id="legend-title" title="Status guide" description="What each status means." />
       <ul className="divide-y divide-line">
         {STATUS_ORDER.map((s) => (
-          <li key={s} className="flex flex-col items-start gap-1.5 px-4 py-3 sm:px-5">
+          <li key={s} className="flex flex-col items-start gap-2 px-4 py-3.5 sm:px-5">
             <StatusBadge status={s} />
             <p className="text-sm text-ink-muted">{STATUS_META[s].description}</p>
           </li>
@@ -79,7 +79,7 @@ export default function OverviewPage() {
         </p>
       ) : null}
 
-      <div className="grid gap-4 sm:grid-cols-2 sm:gap-5 xl:grid-cols-4">
+      <div className="grid gap-4 sm:grid-cols-2 sm:gap-5 xl:grid-cols-4 [&>*]:transition-shadow [&>*:hover]:shadow-pop">
         <StatCard
           label="Total agents"
           value={stats.total}
@@ -108,12 +108,12 @@ export default function OverviewPage() {
           icon={ApprovalsIcon}
           demo
         >
-          <Link to="/approvals" className="mt-2 inline-block text-sm font-medium text-accent-700 hover:underline">
+          <Link to="/approvals" className="mt-3 inline-flex min-h-9 items-center rounded-full bg-accent-50 px-3.5 text-sm font-medium text-accent-700 ring-1 ring-inset ring-accent-100 hover:bg-accent-100">
             Review approvals
           </Link>
         </StatCard>
         <StatCard label="Blocked requests" value={stats.blockedToday} hint="today (UTC)" icon={XIcon} demo>
-          <Link to="/payment-requests?status=BLOCKED" className="mt-2 inline-block text-sm font-medium text-accent-700 hover:underline">
+          <Link to="/payment-requests?status=BLOCKED" className="mt-3 inline-flex min-h-9 items-center rounded-full bg-accent-50 px-3.5 text-sm font-medium text-accent-700 ring-1 ring-inset ring-accent-100 hover:bg-accent-100">
             View blocked
           </Link>
         </StatCard>
@@ -166,7 +166,7 @@ export default function OverviewPage() {
         <StatusLegend />
       </div>
 
-      <p className="text-xs text-ink-muted">
+      <p className="px-1 text-xs leading-relaxed text-ink-muted">
         Nothing on this page is a real payment or transaction. SpendGuard never shows transaction hashes until
         they are verified on-chain.
       </p>

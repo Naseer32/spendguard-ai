@@ -38,7 +38,7 @@ export default function AppLayout() {
         {/* Bottom padding keeps content clear of the mobile tab bar. */}
         <main
           id="main"
-          className="flex-1 bg-surface pb-[calc(4.5rem+env(safe-area-inset-bottom))] lg:pb-0"
+          className="flex-1 bg-surface bg-[linear-gradient(to_bottom,var(--color-accent-50),var(--color-surface)_380px)] pb-[calc(4.5rem+env(safe-area-inset-bottom))] lg:pb-0"
         >
           <Outlet />
         </main>

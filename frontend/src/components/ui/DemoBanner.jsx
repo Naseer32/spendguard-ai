@@ -8,7 +8,7 @@ export default function DemoBanner({ children }) {
   return (
     <div
       role="note"
-      className="flex items-start gap-3 rounded-xl border border-warning-200 bg-warning-50 px-4 py-3 text-sm text-warning-700"
+      className="flex items-start gap-3 rounded-2xl border border-warning-200 bg-warning-50/80 px-4 py-2.5 text-[13px] leading-relaxed text-warning-700"
     >
       <InfoIcon className="mt-0.5 h-5 w-5 shrink-0" />
       <p>
