@@ -6,6 +6,7 @@ import ConfirmDialog from '../components/ui/ConfirmDialog.jsx';
 import { DetailList } from '../components/ui/Display.jsx';
 import { Segmented } from '../components/ui/Filters.jsx';
 import { ShieldIcon, WalletIcon } from '../components/ui/Icons.jsx';
+import { useWallet } from '../state/Wallet.jsx';
 import PageContainer from '../components/ui/PageContainer.jsx';
 import { APP_INFO } from '../lib/appInfo.js';
 import { formatDateTime } from '../lib/time.js';
@@ -24,6 +25,14 @@ function Pill({ tone = 'neutral', children }) {
       {children}
     </span>
   );
+}
+
+function WalletStatus() {
+  const { status, accountId } = useWallet();
+  if (status === 'connected' && accountId) {
+    return <Pill tone="success">Connected: {accountId}</Pill>;
+  }
+  return <Pill>{status === 'connecting' ? 'Connecting…' : 'Not connected'}</Pill>;
 }
 
 export default function SettingsPage() {
@@ -52,7 +61,7 @@ export default function SettingsPage() {
                   ),
                 },
                 { label: 'Network', value: `${APP_INFO.network} (display only)` },
-                { label: 'Wallet', value: <Pill>Not connected</Pill> },
+                { label: 'Wallet', value: <WalletStatus /> },
               ]}
             />
             <div className="flex flex-wrap items-center gap-3 rounded-lg bg-surface px-4 py-3">

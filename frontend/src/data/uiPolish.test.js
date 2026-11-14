@@ -94,3 +94,10 @@ test('settings no longer claims wallet signing is missing or shows a dead wallet
   assert.ok(!/not available yet/.test(s));
   assert.match(s, /never asks for/);
 });
+
+test('settings shows the real wallet status instead of a hardcoded Not connected', () => {
+  const s = read('../pages/SettingsPage.jsx');
+  assert.match(s, /import \{ useWallet \} from '\.\.\/state\/Wallet\.jsx'/);
+  assert.match(s, /value: <WalletStatus \/>/);
+  assert.ok(!/value: <Pill>Not connected<\/Pill>/.test(s));
+});
