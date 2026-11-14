@@ -58,3 +58,9 @@ test('landing FAQ makes no unverifiable claims', async () => {
     assert.ok(!text.includes(banned), `banned claim: ${banned}`);
   }
 });
+
+test('metric cards use the larger numeric treatment', () => {
+  const c = read('../components/ui/Card.jsx');
+  assert.match(c, /sm:text-4xl/);
+  assert.match(c, /<Card className="p-5 sm:p-6">/);
+});

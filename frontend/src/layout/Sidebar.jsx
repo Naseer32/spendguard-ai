@@ -21,7 +21,7 @@ export default function Sidebar() {
                 to={to}
                 end={end}
                 className={({ isActive }) =>
-                  `flex min-h-10 items-center gap-3 rounded-lg px-3 text-sm font-medium transition-colors ${
+                  `flex min-h-11 items-center gap-3 rounded-xl px-3.5 text-sm font-medium transition-colors ${
                     isActive
                       ? 'bg-accent-50 text-accent-700 shadow-[inset_3px_0_0_var(--color-accent-600)]'
                       : 'text-ink-soft hover:bg-surface hover:text-ink'
