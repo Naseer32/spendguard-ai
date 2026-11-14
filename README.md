@@ -4,6 +4,28 @@ A spending-limit and approval layer for AI agents that move money on NEAR. An ag
 
 Built for **NEAR HACKATHON**, track: **AI Security & Defense** (make AI-controlled money safer with spending limits, wallet safeguards and scam detection).
 
+## For judges: three ways to test it
+
+| Path | Time | Needs | What you see |
+|---|---|---|---|
+| 1. Policy demo script | 1 minute | Node 24.15+ | A scripted agent asks for six payments; SpendGuard returns APPROVED, APPROVAL_REQUIRED or BLOCKED with reason codes, an owner approves one, and the audit log verifies. No NEAR account or keys. |
+| 2. Dashboard | 2 minutes | A browser | https://spendguard-ai.vercel.app opens in clearly labelled demo mode with sample data: agents, limits, approvals, activity. |
+| 3. Real NEAR Testnet payment | 10 minutes | A funded testnet account | An agent asks, SpendGuard approves, the transfer is signed and sent, and the backend verifies it on-chain before marking it executed. |
+
+**Path 1, step by step**
+
+```
+cd backend
+npm install
+npm run demo
+```
+
+Expected: six lines like `0.5 NEAR to trusted.testnet -> APPROVED WITHIN_POLICY`, `... stranger.testnet -> APPROVAL_REQUIRED RECIPIENT_NOT_ALLOWLISTED`, `... scammer.testnet -> BLOCKED RECIPIENT_BLOCKED`, `6 NEAR ... -> BLOCKED EXCEEDS_TX_LIMIT`, then the owner's approval and `Audit log check: valid`.
+
+The automated tests also cover the policy engine, on-chain verification and money math: `cd backend && npm test` (about 1,100 tests, no network needed).
+
+Path 3 is the "Try it" section below. Real transfers made during development are listed under "Live run".
+
 ## The problem
 
 An autonomous agent that holds a key can pay anyone, any amount, as often as it likes. One bad prompt or one bug can drain the wallet.
