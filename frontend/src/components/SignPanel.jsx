@@ -113,7 +113,10 @@ export default function SignPanel({ request, agent }) {
               <p className="mt-0.5">Backend status: <strong>{result.payment?.status ?? 'unknown'}</strong></p>
             </>
           ) : (
-            <p>{result.message}</p>
+            <>
+              <p>{result.message}</p>
+              {result.detail ? <p className="mt-1 break-words font-mono text-xs opacity-80">Wallet said: {result.detail}</p> : null}
+            </>
           )}
         </div>
       ) : null}

@@ -79,7 +79,11 @@ export async function signAndReport({ payment, agent, accountId, isLive = true, 
   try {
     outcome = await signTransfer(buildTransfer(payment));
   } catch (error) {
-    return { ok: false, stage: 'wallet', ...describeWalletError(error) };
+    // Diagnostics only: the wallet's own error name and message (never keys; the wallet holds them) go to the
+    // browser console so a failure can be traced. The screen keeps the plain-language text.
+    const detail = `${error?.name ?? 'Error'}: ${String(error?.message ?? error).slice(0, 200)}`;
+    console.error('[wallet] signTransfer failed:', detail);
+    return { ok: false, stage: 'wallet', ...describeWalletError(error), detail };
   }
 
   const txHash = extractTxHash(outcome);
