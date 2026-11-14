@@ -72,6 +72,7 @@ npm run dev
 | Open **Agents**, then an agent | Its limits, status and recipient lists, from clearly labelled demo data. |
 | Open **Approvals**, approve one request | The request moves to APPROVED and the budget updates. |
 | Open **Activity** | The audit trail for what you just did. |
+| Choose **Connect wallet** (NEAR Testnet), then **Agents > New agent** | The source account is filled in from your connected wallet and locked. Disconnect the wallet to type a different account. |
 
 ### 2. Run the backend
 

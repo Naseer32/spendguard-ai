@@ -1,9 +1,11 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { yoctoToNear } from '../lib/money.js';
+import { resolveSourceAccount } from '../lib/sourceAccount.js';
 import { validateAgentForm, validateLimits } from '../lib/validation.js';
 import { useStore } from '../state/DataStore.jsx';
 import { useToast } from '../state/Toasts.jsx';
+import { useWallet } from '../state/Wallet.jsx';
 import ApiKeyDialog from './ApiKeyDialog.jsx';
 import { FormError, useSubmit } from './useSubmit.jsx';
 import Button from './ui/Button.jsx';
@@ -58,15 +60,20 @@ function NewAgentForm({ onClose }) {
   const { actions, isLive } = useStore();
   const notify = useToast();
   const navigate = useNavigate();
+  const wallet = useWallet();
   const { busy, serverError, run, fail } = useSubmit();
   const [issued, setIssued] = useState(null); // { id, apiKey, name }: live mode only, shown once
   const { values, errors, setErrors, set } = useFormState({
     name: '', sourceAccount: '', dailyBudget: '', perTxLimit: '', approvalThreshold: '',
   });
+  // A connected wallet's account is the agent's source account (the owner pays from it).
+  const source = resolveSourceAccount({
+    walletStatus: wallet.status, walletAccountId: wallet.accountId, typed: values.sourceAccount,
+  });
 
   function submit(e) {
     e.preventDefault();
-    const result = validateAgentForm(values);
+    const result = validateAgentForm({ ...values, sourceAccount: source.account });
     if (!result.ok) {
       setErrors(result.errors);
       return;
@@ -136,10 +143,15 @@ function NewAgentForm({ onClose }) {
           autoComplete="off"
           autoCapitalize="none"
           spellCheck={false}
-          value={values.sourceAccount}
+          value={source.account}
           onChange={(e) => set('sourceAccount', e.target.value)}
+          readOnly={source.fromWallet}
           error={errors.sourceAccount}
-          hint="The NEAR account the owner will pay from, e.g. my-agent.testnet."
+          hint={
+            source.fromWallet
+              ? 'Using your connected wallet account. Disconnect the wallet to enter a different account.'
+              : 'The NEAR account the owner will pay from, e.g. my-agent.testnet. Connect a wallet to use its account.'
+          }
         />
         <LimitFields values={values} errors={errors} set={set} />
         <FormError message={serverError} />
