@@ -87,3 +87,10 @@ test('Live-mode copy no longer claims wallet signing is missing', () => {
     assert.ok(!/No wallet signing/.test(t), `stale copy in ${f}`);
   }
 });
+
+test('settings no longer claims wallet signing is missing or shows a dead wallet button', () => {
+  const s = read('../pages/SettingsPage.jsx');
+  assert.ok(!/not part of this build/.test(s));
+  assert.ok(!/not available yet/.test(s));
+  assert.match(s, /never asks for/);
+});

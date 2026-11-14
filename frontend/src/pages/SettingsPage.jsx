@@ -58,10 +58,9 @@ export default function SettingsPage() {
             <div className="flex flex-wrap items-center gap-3 rounded-lg bg-surface px-4 py-3">
               <WalletIcon className="h-5 w-5 shrink-0 text-ink-muted" />
               <p className="min-w-0 flex-1 text-sm text-ink-muted">
-                Wallet connection and payment signing are not part of this build. SpendGuard never asks for,
+                Connect your NEAR Testnet wallet from the top bar. Payments are signed inside your wallet. SpendGuard never asks for,
                 shows or stores private keys or seed phrases.
               </p>
-              <Button disabled aria-label="Connect NEAR wallet (not available yet)">Connect wallet</Button>
             </div>
           </CardBody>
         </Card>
