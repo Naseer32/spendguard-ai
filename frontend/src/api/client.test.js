@@ -105,3 +105,15 @@ test('network failures and timeouts are distinct and never leak the token', asyn
   });
   await assert.rejects(c.request({ path: '/api/agents' }), (e) => e.kind === 'timeout');
 });
+
+test('a one-off bearer credential is sent instead of the owner token, and an empty one sends nothing', async () => {
+  const f = fakeFetch(() => json(201, { data: { ok: true } }));
+  const c = createApiClient({ baseUrl: '', getToken: () => 'owner-tok', fetchImpl: f });
+  await c.request({ method: 'POST', path: '/api/v1/payments/evaluate', body: {}, auth: { bearer: 'sgk_agent_key' } });
+  assert.equal(f.calls[0].init.headers.Authorization, 'Bearer sgk_agent_key');
+  await assert.rejects(
+    c.request({ method: 'POST', path: '/api/v1/payments/evaluate', body: {}, auth: { bearer: '' } }),
+    (e) => e instanceof ApiError && e.kind === 'auth',
+  );
+  assert.equal(f.calls.length, 1);
+});

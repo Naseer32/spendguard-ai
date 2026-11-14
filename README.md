@@ -90,6 +90,8 @@ npm start
 
 In the dashboard open **Settings > Backend connection**, leave the address empty, enter the owner token. The dashboard now shows live data instead of the demo seed.
 
+After connecting to the backend, open an agent and choose **Request a payment**. Enter a recipient, an amount and the agent's API key (used once, never stored). SpendGuard evaluates it, the request opens, and if it is APPROVED you can pay it from your connected wallet. If it needs approval, approve it first.
+
 ### 3. Run the autonomous agent on NEAR Testnet
 
 You need a funded testnet account and its secret key. Use a throwaway account.
@@ -148,6 +150,7 @@ Backend and frontend tests also run on every push through GitHub Actions on Node
 - No AI explainer yet; explanations are not generated.
 - Single owner token. No multi-user accounts.
 - See "Custody model" for what SpendGuard cannot prevent.
+- A review found open issues around payments reported after their window, double payment from two places, and delayed transactions. See [docs/security-review.md](docs/security-review.md). This is a testnet MVP and has not had an independent audit.
 
 ## Project layout
 

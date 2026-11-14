@@ -54,7 +54,11 @@ export function createApiClient({
   async function request({ method = 'GET', path, query, body, auth = 'owner' }) {
     const url = buildUrl(baseUrl, path, query);
     const headers = { Accept: 'application/json' };
-    if (auth === 'owner') {
+    if (auth !== null && typeof auth === 'object') {
+      // A one-off credential for a single call (an agent API key). It is never stored.
+      if (typeof auth.bearer !== 'string' || auth.bearer === '') throw new ApiError('auth', 'No credential was given.');
+      headers.Authorization = `Bearer ${auth.bearer}`;
+    } else if (auth === 'owner') {
       const token = getToken();
       if (typeof token !== 'string' || token === '') {
         throw new ApiError('auth', 'Not connected: no owner token.');

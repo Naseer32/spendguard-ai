@@ -15,6 +15,7 @@
 //   GET    /api/payments/:requestId                     owner  -> { payment, approval }
 //   POST   /api/payments/:requestId/approve | reject    owner
 //   POST   /api/payments/:requestId/tx-report           owner  { txHash, signerId } -> { verdict, action, reason, payment }
+//   POST   /api/v1/payments/evaluate                    AGENT key (one call, never stored)
 //   GET    /api/audit?afterSeq&limit&event&entityId     owner
 //   GET    /api/audit/verify                            owner
 //
@@ -163,6 +164,29 @@ export function createEndpoints(client) {
         reason: typeof data.reason === 'string' ? data.reason : null,
         payment: mapPayment(data.payment),
       };
+    },
+
+    /**
+     * Acts as the AGENT: POST /api/v1/payments/evaluate with the agent's own API key (held by the caller
+     * for this one call only). Resolves { id, replayed }. Read the owner's view with getPayment(id).
+     */
+    async evaluatePayment(agentKey, { idempotencyKey, recipient, amount, purpose }) {
+      let data;
+      try {
+        data = await call('POST', '/api/v1/payments/evaluate', {
+          auth: { bearer: agentKey },
+          body: present({ idempotencyKey, recipient, amount, purpose }),
+        });
+      } catch (error) {
+        // A wrong AGENT key must never look like a rejected OWNER token (that would disconnect the dashboard).
+        if (error instanceof ApiError && error.kind === 'auth') {
+          throw new ApiError('client', "The backend rejected this agent's API key. Check it, or rotate the key.", { status: 401, code: 'UNAUTHORIZED' });
+        }
+        throw error;
+      }
+      const id = data?.payment?.id;
+      if (typeof id !== 'string' || !UUID_RE.test(id)) throw new ApiError('shape', 'Unexpected evaluation response.');
+      return { id, replayed: data.replayed === true };
     },
 
     /** Entries come back oldest-first from afterSeq. `head.seq` is the newest sequence number. */

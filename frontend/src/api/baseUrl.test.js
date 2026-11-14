@@ -16,7 +16,7 @@ test('http is allowed only for this device and private networks', () => {
   for (const h of ['http://localhost:3000', 'http://127.0.0.1:3000', 'http://192.168.1.5:3000', 'http://10.0.0.2', 'http://172.20.1.1', 'http://[::1]:3000']) {
     assert.equal(validateBaseUrl(h).ok, true, h);
   }
-  for (const h of ['http://api.example.com', 'http://8.8.8.8', 'http://172.32.0.1', 'http://localhost.evil.com']) {
+  for (const h of ['http://api.example.com', 'http://8.8.8.8', 'http://172.32.0.1', 'http://localhost.evil.com', 'http://10.evil.com', 'http://127.evil.com', 'http://192.168.1.1.evil.com', 'http://300.1.1.1']) {
     assert.equal(validateBaseUrl(h).ok, false, h);
   }
 });

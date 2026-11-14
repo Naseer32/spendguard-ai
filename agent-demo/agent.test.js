@@ -5,10 +5,11 @@ import { join } from 'node:path';
 import { afterEach, describe, test } from 'node:test';
 
 import {
-  EXIT, assertTestnet, createFileStateStore, deriveIdempotencyKey, nearToYocto, redact, run,
+  EXIT, assertTestnet, createFileStateStore, deriveIdempotencyKey, isLocalHost, nearToYocto, redact, run,
 } from './agent.js';
 
-const API_KEY = 'sgk_11111111-2222-3333-4444-555555555555_deadbeefdeadbeefdeadbeef';
+const AGENT_ID = '11111111-2222-3333-4444-555555555555';
+const API_KEY = `sgk_${AGENT_ID}_deadbeefdeadbeefdeadbeef`;
 const OWNER = 'owner-token-super-secret-value';
 const PRIV = 'ed25519:5Ab3kLmNpQrStUvWxYz1234567890abcdefghijkmnopqrstuv';
 const TX = '9xKQ3mT7vPz2LcRb4HnYd8WsFjA6eUgXoNiC5tBhVq1Z';
@@ -45,7 +46,7 @@ function payment(over = {}) {
 }
 
 // A fake backend. `report` decides what tx-report answers; calls are recorded.
-function fakeBackend({ evaluate = payment(), report } = {}) {
+function fakeBackend({ evaluate = payment(), report, agentsList = [{ id: AGENT_ID, sourceAccount: SOURCE, perTxLimit: '5000000000000000000000000' }], failAgents = false } = {}) {
   const calls = [];
   const reportFn = report ?? (() => ({ status: 200, body: { verdict: 'VERIFIED', action: 'MARK_DONE', reason: 'ok', payment: { status: 'BACKEND_SAYS' } } }));
   const fetchImpl = async (url, init) => {
@@ -53,7 +54,8 @@ function fakeBackend({ evaluate = payment(), report } = {}) {
     calls.push({ method: init.method, path, auth: init.headers.authorization, body: init.body === undefined ? null : JSON.parse(init.body) });
     const reply = (status, body) => ({ ok: status < 400, status, text: async () => JSON.stringify(status < 400 ? { data: body } : body) });
     if (path === '/api/v1/payments/evaluate') return reply(201, { payment: evaluate, replayed: false });
-    if (path === '/api/agents') return reply(200, { agents: [{ sourceAccount: SOURCE, perTxLimit: '5000000000000000000000000' }] });
+    if (path === '/api/agents' && failAgents) throw new Error('down');
+    if (path === '/api/agents') return reply(200, { agents: agentsList });
     if (path.startsWith('/api/v1/payments/')) return reply(200, { payment: { ...evaluate, status: 'BACKEND_SAYS' } });
     if (path.endsWith('/tx-report')) {
       const r = reportFn();
@@ -250,7 +252,7 @@ describe('testnet only', () => {
 
   test('refuses mainnet network, RPC, accounts and plain http', () => {
     assert.throws(() => assertTestnet({ ...ok, network: 'mainnet' }), /testnet/);
-    assert.throws(() => assertTestnet({ ...ok, rpcUrl: 'https://rpc.mainnet.near.org' }), /testnet endpoint/);
+    assert.throws(() => assertTestnet({ ...ok, rpcUrl: 'https://rpc.mainnet.near.org' }), /known NEAR testnet RPC/);
     assert.throws(() => assertTestnet({ ...ok, rpcUrl: 'http://rpc.testnet.near.org' }), /https/);
     assert.throws(() => assertTestnet({ ...ok, rpcUrl: 'https://user:pw@rpc.testnet.near.org' }), /https/);
     assert.throws(() => assertTestnet({ ...ok, sourceAccount: 'agent.near' }), /SOURCE_ACCOUNT/);
@@ -277,5 +279,42 @@ describe('testnet only', () => {
     });
     assert.equal(code, EXIT.ERROR);
     assert.match(text, /no options/);
+  });
+});
+
+describe('source account and host checks', () => {
+  test('does not send when the API key belongs to an agent with a different source account', async () => {
+    const backend = fakeBackend({ agentsList: [{ id: AGENT_ID, sourceAccount: 'someone-else.testnet', perTxLimit: '5000000000000000000000000' }] });
+    const sender = fakeSender();
+    const { code, text } = await runWith({ backend, sender, store: tmpStore() });
+    assert.equal(code, EXIT.ERROR);
+    assert.equal(sender.sends.length, 0);
+    assert.match(text, /not this API key/);
+  });
+
+  test('does not send when the agent list cannot be read (fails closed)', async () => {
+    const sender = fakeSender();
+    const { code } = await runWith({ backend: fakeBackend({ failAgents: true }), sender, store: tmpStore() });
+    assert.equal(code, EXIT.ERROR);
+    assert.equal(sender.sends.length, 0);
+  });
+
+  test('does not send above the per-transaction limit (convenience check)', async () => {
+    const backend = fakeBackend({ agentsList: [{ id: AGENT_ID, sourceAccount: SOURCE, perTxLimit: '1' }] });
+    const sender = fakeSender();
+    const { code } = await runWith({ backend, sender, store: tmpStore() });
+    assert.equal(code, EXIT.NOT_APPROVED);
+    assert.equal(sender.sends.length, 0);
+  });
+
+  test('only real loopback and private addresses count as local, not look-alike names', () => {
+    for (const ok of ['localhost', '127.0.0.1', '10.1.2.3', '192.168.0.9', '172.16.0.1', '172.31.255.1', '[::1]']) assert.equal(isLocalHost(ok), true, ok);
+    for (const bad of ['10.evil.com', '127.evil.com', 'localhost.evil.com', '192.168.1.1.evil.com', '172.32.0.1', '8.8.8.8', 'example.com']) assert.equal(isLocalHost(bad), false, bad);
+  });
+
+  test('a hostname that merely contains "testnet" is not an accepted RPC host', () => {
+    const ok = { network: 'testnet', rpcUrl: 'https://rpc.testnet.near.org', sourceAccount: SOURCE, recipient: RECIPIENT };
+    assert.throws(() => assertTestnet({ ...ok, rpcUrl: 'https://testnet.attacker.com' }), /known NEAR testnet RPC/);
+    assert.throws(() => assertTestnet({ ...ok, rpcUrl: 'https://rpc.testnet.near.org.attacker.com' }), /known NEAR testnet RPC/);
   });
 });

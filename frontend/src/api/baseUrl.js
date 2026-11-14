@@ -4,16 +4,20 @@
 // for this device and private networks (local development). Anything on the
 // public internet must use https://.
 
-const PRIVATE_V4 = [
-  /^127\./,
-  /^10\./,
-  /^192\.168\./,
-  /^172\.(1[6-9]|2\d|3[01])\./,
-];
+const IPV4_RE = /^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/;
+
+// Only a real IPv4 literal can be a private address. Names such as "10.evil.com" must not match.
+function isPrivateIpv4(host) {
+  const m = IPV4_RE.exec(host);
+  if (m === null) return false;
+  const [a, b, c, d] = m.slice(1).map(Number);
+  if ([a, b, c, d].some((n) => n > 255)) return false;
+  return a === 127 || a === 10 || (a === 192 && b === 168) || (a === 172 && b >= 16 && b <= 31);
+}
 
 function isPrivateHost(hostname) {
   const host = hostname.replace(/^\[|\]$/g, '').toLowerCase();
-  return host === 'localhost' || host === '::1' || PRIVATE_V4.some((re) => re.test(host));
+  return host === 'localhost' || host === '::1' || isPrivateIpv4(host);
 }
 
 /**

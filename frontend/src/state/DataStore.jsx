@@ -343,6 +343,21 @@ export function DataStoreProvider({ children, initialDemoState }) {
         });
       },
 
+      /**
+       * Live only. Acts as the agent (its API key is used for this one call and dropped), then reads the
+       * owner's view of the new request. Resolves { ok, id, replayed }; the decision is the backend's.
+       */
+      async requestPayment(agentKey, input) {
+        if (!isLive) return { ok: false, error: 'Requesting a payment needs a live backend.' };
+        return withApi(async (api, gen) => {
+          const { id, replayed } = await api.evaluatePayment(agentKey, input);
+          const { payment } = await api.getPayment(id);
+          applyLive(gen, (l) => ({ ...l, requests: upsertById(l.requests, payment) }));
+          refreshAudit(gen);
+          return { ok: true, id, replayed };
+        });
+      },
+
       async loadOlderAudit() {
         if (!isLive) return { ok: true };
         return withApi(async (api, gen) => {

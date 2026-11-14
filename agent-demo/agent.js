@@ -15,6 +15,7 @@ import { createHash } from 'node:crypto';
 import {
   closeSync, existsSync, mkdirSync, openSync, readFileSync, renameSync, unlinkSync, writeFileSync,
 } from 'node:fs';
+import { isIP } from 'node:net';
 import { homedir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { pathToFileURL } from 'node:url';
@@ -55,6 +56,22 @@ export function isTestnetAccount(id) {
   return typeof id === 'string' && ACCOUNT_RE.test(id) && (id.endsWith('.testnet') || IMPLICIT_RE.test(id));
 }
 
+const TESTNET_RPC_HOSTS = new Set(['rpc.testnet.near.org', 'archival-rpc.testnet.near.org', 'test.rpc.fastnear.com']);
+
+/** Exact allow-list: a hostname that merely contains "testnet" is not enough. */
+export function isKnownTestnetRpcHost(host) {
+  return TESTNET_RPC_HOSTS.has(host) || host.endsWith('.testnet.near.org');
+}
+
+/** localhost or a real private IPv4/IPv6 literal. Names such as "10.evil.com" are NOT local. */
+export function isLocalHost(hostname) {
+  const host = hostname.replace(/^\[|\]$/g, '').toLowerCase();
+  if (host === 'localhost' || host === '::1') return true;
+  if (isIP(host) !== 4) return false;
+  const [a, b] = host.split('.').map(Number);
+  return a === 127 || a === 10 || (a === 192 && b === 168) || (a === 172 && b >= 16 && b <= 31);
+}
+
 /** Throws unless every network setting points at NEAR testnet. */
 export function assertTestnet({ network, rpcUrl, sourceAccount, recipient }) {
   if (network !== 'testnet') {
@@ -68,8 +85,8 @@ export function assertTestnet({ network, rpcUrl, sourceAccount, recipient }) {
   } catch {
     throw new UserError('Refusing to run: NEAR_RPC_URL must be an https URL without credentials.');
   }
-  if (!/(^|[.-])testnet([.-]|$)/.test(host)) {
-    throw new UserError('Refusing to run: NEAR_RPC_URL does not look like a testnet endpoint.');
+  if (!isKnownTestnetRpcHost(host)) {
+    throw new UserError('Refusing to run: NEAR_RPC_URL is not a known NEAR testnet RPC host.');
   }
   if (!isTestnetAccount(sourceAccount)) {
     throw new UserError('Refusing to run: SOURCE_ACCOUNT must be a testnet account (ends with .testnet).');
@@ -130,8 +147,7 @@ export function readConfig(env) {
   if (!['http:', 'https:'].includes(backend.protocol) || backend.username !== '' || backend.password !== '') {
     throw new UserError('BACKEND_URL must be http(s) without embedded credentials.');
   }
-  const local = /^(localhost|127\.|10\.|192\.168\.|172\.(1[6-9]|2\d|3[01])\.|\[?::1\]?$)/.test(backend.hostname);
-  if (backend.protocol === 'http:' && !local) {
+  if (backend.protocol === 'http:' && !isLocalHost(backend.hostname)) {
     throw new UserError('BACKEND_URL must use https unless it points at localhost or a private network.');
   }
   return Object.freeze({
@@ -306,6 +322,13 @@ export async function createNearSender({ secretKey, accountId, rpcUrl }) {
 // The run
 // ---------------------------------------------------------------------------
 
+/** Agent API keys look like sgk_<agentId>_<secret>. Returns the agent that key belongs to, if listed. */
+export function findKeyAgent(agents, apiKey) {
+  const match = /^sgk_([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})_/i.exec(apiKey);
+  if (match === null || !Array.isArray(agents)) return undefined;
+  return agents.find((a) => a?.id?.toLowerCase() === match[1].toLowerCase());
+}
+
 function showVerdict(log, report) {
   log(`Backend verdict: ${report.verdict}`);
   if (typeof report.action === 'string') log(`Backend action:  ${report.action}`);
@@ -409,15 +432,23 @@ export async function run({ argv, env, deps = {} }) {
       return EXIT.NOT_APPROVED;
     }
 
-    // Convenience pre-check against the agent's limits. The backend decision stays the authority.
+    // The API key must belong to the agent whose source account we are about to pay from. Otherwise the
+    // money would leave SOURCE_ACCOUNT and the backend would refuse the report (SIGNER_NOT_SOURCE). Fail closed.
+    let agent;
     try {
-      const agent = (await backend.listAgents()).agents?.find((a) => a?.sourceAccount === cfg.sourceAccount);
-      if (agent !== undefined && /^[0-9]+$/.test(agent.perTxLimit ?? '') && BigInt(amountYocto) > BigInt(agent.perTxLimit)) {
-        log('Convenience check: the amount is above the per-transaction limit. No money was sent.');
-        return EXIT.NOT_APPROVED;
-      }
+      agent = findKeyAgent((await backend.listAgents()).agents, cfg.agentApiKey);
     } catch {
-      log('Convenience limit check skipped (could not read the agent limits). The backend decision still applies.');
+      log('Could not read the agent from the backend, so the source account could not be checked. No money was sent.');
+      return EXIT.ERROR;
+    }
+    if (agent === undefined || agent.sourceAccount !== cfg.sourceAccount) {
+      log('SOURCE_ACCOUNT is not this API key\'s source account in SpendGuard. No money was sent.');
+      return EXIT.ERROR;
+    }
+    // Convenience pre-check against the agent's limits. The backend decision stays the authority.
+    if (/^[0-9]+$/.test(agent.perTxLimit ?? '') && BigInt(amountYocto) > BigInt(agent.perTxLimit)) {
+      log('Convenience check: the amount is above the per-transaction limit. No money was sent.');
+      return EXIT.NOT_APPROVED;
     }
 
     // 3. Prepare the signer BEFORE recording intent, so a bad key never leaves a dangling marker.

@@ -3,6 +3,8 @@ import { Link, useParams } from 'react-router-dom';
 import ApiKeyDialog from '../components/ApiKeyDialog.jsx';
 import { EditLimitsModal } from '../components/AgentForms.jsx';
 import RecipientModal from '../components/RecipientModal.jsx';
+import RequestDetailModal from '../components/RequestDetailModal.jsx';
+import RequestPaymentModal from '../components/RequestPaymentModal.jsx';
 import Button from '../components/ui/Button.jsx';
 import { Card, CardBody, CardHeader, DemoTag } from '../components/ui/Card.jsx';
 import ConfirmDialog from '../components/ui/ConfirmDialog.jsx';
@@ -47,6 +49,8 @@ export default function AgentDetailPage() {
 
   const [editing, setEditing] = useState(false);
   const [addingRecipient, setAddingRecipient] = useState(false);
+  const [requestingPayment, setRequestingPayment] = useState(false);
+  const [openRequestId, setOpenRequestId] = useState(null);
   const [confirmStatus, setConfirmStatus] = useState(false);
   const [removeTarget, setRemoveTarget] = useState(null);
 
@@ -129,6 +133,7 @@ export default function AgentDetailPage() {
       description={undefined}
       actions={
         <div className="flex flex-wrap gap-2">
+          {isLive ? <Button variant="primary" onClick={() => setRequestingPayment(true)}>Request a payment</Button> : null}
           <Button onClick={() => setEditing(true)}>Edit limits</Button>
           {isLive ? <Button onClick={() => setConfirmRotate(true)}>Rotate API key</Button> : null}
           <Button variant={pausing ? 'danger-outline' : 'primary'} onClick={() => setConfirmStatus(true)}>
@@ -246,7 +251,12 @@ export default function AgentDetailPage() {
       <Card aria-labelledby="agent-requests" className="overflow-hidden">
         <CardHeader id="agent-requests" title="Payment requests" action={<Link to={`/payment-requests?agent=${agent.id}`} className="text-sm font-medium text-accent-700 hover:underline">View all</Link>} />
         {requests.length === 0 ? (
-          <EmptyState title="No payment requests yet" description="Requests appear here once this agent asks SpendGuard to evaluate a payment." />
+          <EmptyState
+            title="No payment requests yet"
+            description={isLive
+              ? 'Requests appear here once this agent asks SpendGuard to evaluate a payment. Use "Request a payment" above to send one as this agent, then approve and pay it from your wallet.'
+              : 'Requests appear here once this agent asks SpendGuard to evaluate a payment.'}
+          />
         ) : (
           <ul className="divide-y divide-line">
             {requests.slice(0, 5).map((r) => (
@@ -264,6 +274,18 @@ export default function AgentDetailPage() {
 
       <EditLimitsModal agent={agent} open={editing} onClose={() => setEditing(false)} />
       <RecipientModal agent={agent} open={addingRecipient} onClose={() => setAddingRecipient(false)} />
+      <RequestPaymentModal
+        agent={agent}
+        open={requestingPayment}
+        onClose={() => setRequestingPayment(false)}
+        onCreated={(id) => { setRequestingPayment(false); setOpenRequestId(id); }}
+      />
+      {openRequestId ? (
+        <RequestDetailModal
+          request={state.requests.find((r) => r.id === openRequestId) ?? null}
+          onClose={() => setOpenRequestId(null)}
+        />
+      ) : null}
 
       <ConfirmDialog
         open={confirmStatus}
