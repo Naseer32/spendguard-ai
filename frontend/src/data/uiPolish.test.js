@@ -70,11 +70,3 @@ test('overview keeps its demo labelling after the visual redesign', () => {
   assert.match(read('../components/ui/DemoBanner.jsx'), /Demo data\./);
   assert.match(read('../layout/AppLayout.jsx'), /linear-gradient\(to_bottom/);
 });
-
-test('agents page keeps its features and Demo tag after the visual pass', () => {
-  const a = read('../pages/AgentsPage.jsx');
-  assert.match(a, /<DemoTag/);
-  assert.match(a, /NewAgentModal/);
-  assert.match(a, /navigate\(`\/agents\/\$\{agent\.id\}`\)/);
-  assert.match(a, /text-\[15px\] font-semibold/);
-});

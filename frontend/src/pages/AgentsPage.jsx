@@ -38,7 +38,7 @@ export default function AgentsPage() {
       header: 'Agent',
       render: (a) => (
         <>
-          <span className="block text-[15px] font-semibold tracking-tight text-ink">{a.name}</span>
+          <span className="block font-medium text-ink">{a.name}</span>
           <AccountId value={a.sourceAccount} className="text-ink-muted" />
         </>
       ),
@@ -47,7 +47,7 @@ export default function AgentsPage() {
     {
       key: 'budget',
       header: 'Spent today',
-      className: 'w-64',
+      className: 'w-56',
       render: (a) => (
         <div className="space-y-1.5">
           <p className="text-xs text-ink-soft">
@@ -113,10 +113,10 @@ export default function AgentsPage() {
                 onOpen={open}
                 caption="Agents"
                 renderCard={(a) => (
-                  <div className="space-y-3.5">
+                  <div className="space-y-3">
                     <div className="flex items-start justify-between gap-3">
                       <div className="min-w-0">
-                        <p className="text-[15px] font-semibold tracking-tight text-ink">{a.name}</p>
+                        <p className="font-medium text-ink">{a.name}</p>
                         <AccountId value={a.sourceAccount} className="text-ink-muted" />
                       </div>
                       <AgentStatusBadge status={a.status} />
@@ -127,7 +127,7 @@ export default function AgentsPage() {
                       </p>
                       <ProgressBar percent={dailyUsedPercent(state.requests, a, nowIso)} label={`Daily budget used by ${a.name}`} />
                     </div>
-                    <p className="rounded-xl bg-surface px-3 py-2 text-xs leading-relaxed text-ink-soft">
+                    <p className="text-xs text-ink-muted">
                       Per-tx limit <Amount yocto={a.perTxLimit} /> · approval above <Amount yocto={a.approvalThreshold} />
                     </p>
                   </div>
