@@ -51,7 +51,7 @@ function fakeBackend({ evaluate = payment(), report } = {}) {
   const fetchImpl = async (url, init) => {
     const path = new URL(url).pathname;
     calls.push({ method: init.method, path, auth: init.headers.authorization, body: init.body === undefined ? null : JSON.parse(init.body) });
-    const reply = (status, body) => ({ ok: status < 400, status, text: async () => JSON.stringify(body) });
+    const reply = (status, body) => ({ ok: status < 400, status, text: async () => JSON.stringify(status < 400 ? { data: body } : body) });
     if (path === '/api/v1/payments/evaluate') return reply(201, { payment: evaluate, replayed: false });
     if (path === '/api/agents') return reply(200, { agents: [{ sourceAccount: SOURCE, perTxLimit: '5000000000000000000000000' }] });
     if (path.startsWith('/api/v1/payments/')) return reply(200, { payment: { ...evaluate, status: 'BACKEND_SAYS' } });

@@ -258,8 +258,10 @@ export function createBackend({ baseUrl, agentApiKey, ownerToken, fetchImpl = gl
       throw new ApiError(res.status, typeof e?.code === 'string' ? e.code : 'HTTP_ERROR',
         typeof e?.message === 'string' ? e.message : `The backend answered HTTP ${res.status}.`, json);
     }
-    if (json === null || typeof json !== 'object') throw new ApiError(res.status, 'SHAPE', 'The backend sent an unreadable response.');
-    return json;
+    // Every success body is wrapped as { data: ... } (backend/src/app.js).
+    const data = json?.data;
+    if (data === null || typeof data !== 'object') throw new ApiError(res.status, 'SHAPE', 'The backend sent an unreadable response.');
+    return data;
   }
 
   return {
