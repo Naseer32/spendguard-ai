@@ -157,3 +157,7 @@ frontend/    React + Vite + Tailwind owner dashboard
 agent-demo/  Autonomous agent that pays only when SpendGuard approves
 docs/        Architecture
 ```
+
+## License
+
+MIT. See [LICENSE](LICENSE).
