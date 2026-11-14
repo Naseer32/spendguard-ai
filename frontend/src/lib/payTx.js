@@ -75,6 +75,9 @@ export function describeVerdict({ verdict, reason, payment } = {}) {
 
 /** Wallet errors never expose raw wallet text. Only a rejection proves nothing was sent. */
 export function describeWalletError(error) {
+  if (error?.code === 'ACCOUNT_MISMATCH') {
+    return { kind: 'mismatch', message: "Your wallet is on a different account than this agent's source account. Switch accounts in the wallet and try again. Nothing was sent." };
+  }
   const text = `${error?.name ?? ''} ${error?.message ?? ''}`.toLowerCase();
   if (/reject|denied|declin|cancel|closed|abort/.test(text)) {
     return { kind: 'rejected', message: 'You declined the request in your wallet. Nothing was sent.' };

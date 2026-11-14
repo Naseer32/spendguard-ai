@@ -53,7 +53,7 @@ describe('sign and report', () => {
   it('signs exactly the approved transfer, then reports exactly { txHash, signerId }', async () => {
     const h = harness({ reports: [verdict('VERIFIED', 'EXECUTED')] });
     const r = await h.run();
-    assert.deepEqual(h.spy.sign, [{ receiverId: 'merchant.testnet', deposit: '2000000000000000000000000' }]);
+    assert.deepEqual(h.spy.sign, [{ receiverId: 'merchant.testnet', deposit: '2000000000000000000000000', signerId: 'agent-src.testnet' }]);
     assert.equal(h.spy.report.length, 1);
     const [id, body] = h.spy.report[0];
     assert.equal(id, 'req-1');

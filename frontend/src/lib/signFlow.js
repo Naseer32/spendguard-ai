@@ -77,7 +77,7 @@ export async function signAndReport({ payment, agent, accountId, isLive = true, 
 
   let outcome;
   try {
-    outcome = await signTransfer(buildTransfer(payment));
+    outcome = await signTransfer({ ...buildTransfer(payment), signerId: agent.sourceAccount });
   } catch (error) {
     // Diagnostics only: the wallet's own error name and message (never keys; the wallet holds them) go to the
     // browser console so a failure can be traced. The screen keeps the plain-language text.

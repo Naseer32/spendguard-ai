@@ -110,3 +110,11 @@ describe('errors', () => {
     assert.equal(describeReportFailure({ kind: 'client', error: 'Plain backend text' }).message, 'Plain backend text');
   });
 });
+
+it('a wallet on the wrong account is reported as "nothing was sent"', () => {
+  const e = new Error('x');
+  e.code = 'ACCOUNT_MISMATCH';
+  const r = describeWalletError(e);
+  assert.equal(r.kind, 'mismatch');
+  assert.match(r.message, /Nothing was sent/);
+});

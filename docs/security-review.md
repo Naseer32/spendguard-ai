@@ -9,6 +9,7 @@ A read-only review of the backend, dashboard and agent demo, followed by fixes f
 | The agent demo could send from the wrong account if its API key belonged to a different agent, and failed open when the limit check errored. | It now checks that the key's agent has `SOURCE_ACCOUNT` as its source account, and refuses to send if that cannot be confirmed. |
 | The "private network" check for plain `http://` matched names like `10.evil.com` (dashboard and agent demo). | Only real loopback and private IP addresses count now. |
 | The agent demo accepted any RPC host containing the word "testnet". | Exact allow-list of known NEAR testnet RPC hosts. |
+| The dashboard compared the wallet account from page state, not the wallet's current account, at signing time. | The wallet's active account is re-read and must equal the agent's source account, or nothing is sent. |
 | A wrong agent key in the new "Request a payment" form could be mistaken for a rejected owner token and disconnect the dashboard. | A rejected agent key is reported as a plain error. |
 
 ## Open (not fixed, known limits)
@@ -23,7 +24,6 @@ A read-only review of the backend, dashboard and agent demo, followed by fixes f
 | Low | Re-verification of stuck SUBMITTED requests can starve newer ones. |
 | Low | A transaction is matched to a request by signer, recipient, amount and time, so an identical earlier transfer could be reported as the payment. Only the owner can report. |
 | Low | The daily budget day follows approval time, not payment time. |
-| Low | The wallet signer account is compared from app state, not re-read from the wallet at signing time. |
 | Low | The `SUBMITTED_TIMEOUT_MS` setting is parsed but not used. |
 | Low | The owner token is only checked for length and variety. Use 32 random bytes. |
 

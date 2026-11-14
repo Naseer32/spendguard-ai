@@ -40,10 +40,17 @@ export async function createSelectorAdapter() {
     },
 
     // Plain NEAR transfer to the approved recipient. signerId pins the connected account.
-    async signTransfer({ receiverId, deposit }) {
+    async signTransfer({ receiverId, deposit, signerId }) {
+      // Re-read the wallet's active account right now: it may have changed since the page last looked.
+      const current = activeAccount();
+      if (signerId !== undefined && current !== signerId) {
+        const error = new Error('The wallet is on a different account than the approved source account.');
+        error.code = 'ACCOUNT_MISMATCH';
+        throw error;
+      }
       const wallet = await selector.wallet();
       return wallet.signAndSendTransaction({
-        signerId: activeAccount() ?? undefined,
+        signerId: current ?? undefined,
         receiverId,
         // Wallet Selector 10 hands Meteor near-api-js style actions ({ transfer: { deposit } }), not the
         // older { type, params } shape (that one fails with "Unsupported NAJ action").

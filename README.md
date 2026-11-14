@@ -137,10 +137,11 @@ npm start -- send 0.1 <recipient>.testnet "coffee money"
 
 ### Live run
 
-These transfers were made on NEAR Testnet by the agent demo, each approved by the backend and then verified on-chain:
+These transfers were made on NEAR Testnet. The first two were sent by the agent demo, and all were approved by the backend and then verified on-chain:
 
 - `56PbAUYYcJ6vwiNqUyNhK1fMmu9HA49kwkftps4n6kHd` (0.1 NEAR)
 - `5VqZsDeHxXrpszVhsLiGuML525gteUdjQRCfGtWBVutj` (1 NEAR, within that agent's limits)
+- `5vnidUZFSQZ4jckKt2cJZF8Nz5cbXvFwK5pLmXgnRxcd` (0.1 NEAR, signed in the dashboard with Meteor Wallet, then reported and verified by the backend)
 
 Look them up on a NEAR Testnet explorer. A 6 NEAR request above the 5 NEAR per-transaction limit was BLOCKED and nothing was sent.
 
