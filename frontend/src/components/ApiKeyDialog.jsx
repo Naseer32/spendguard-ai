@@ -26,7 +26,7 @@ export default function ApiKeyDialog({ apiKey, agentName, rotated = false, onDon
       dismissible={false}
       onClose={() => {}}
       title={rotated ? 'New API key' : 'Agent created: save its API key'}
-      description={`${agentName}: shown once. SpendGuard cannot show it again.`}
+      description={`${agentName}: shown once. AMANA Guard cannot show it again.`}
       footer={
         <Button variant="primary" className="w-full sm:w-auto" disabled={!saved} onClick={onDone}>
           Done

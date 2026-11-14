@@ -7,7 +7,7 @@ export default function Brand({ className = '' }) {
         <ShieldIcon className="h-5 w-5" />
       </span>
       <span className="text-[17px] font-semibold tracking-tight text-ink">
-        SpendGuard <span className="text-accent-600">AI</span>
+        AMANA <span className="text-accent-600">Guard</span>
       </span>
     </div>
   );

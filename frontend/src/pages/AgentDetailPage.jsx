@@ -254,8 +254,8 @@ export default function AgentDetailPage() {
           <EmptyState
             title="No payment requests yet"
             description={isLive
-              ? 'Requests appear here once this agent asks SpendGuard to evaluate a payment. Use "Request a payment" above to send one as this agent, then approve and pay it from your wallet.'
-              : 'Requests appear here once this agent asks SpendGuard to evaluate a payment.'}
+              ? 'Requests appear here once this agent asks AMANA Guard to evaluate a payment. Use "Request a payment" above to send one as this agent, then approve and pay it from your wallet.'
+              : 'Requests appear here once this agent asks AMANA Guard to evaluate a payment.'}
           />
         ) : (
           <ul className="divide-y divide-line">
@@ -293,7 +293,7 @@ export default function AgentDetailPage() {
         onConfirm={changeStatus}
         danger={pausing}
         title={pausing ? `Pause ${agent.name}?` : `Resume ${agent.name}?`}
-        description={isLive ? 'This is saved to your SpendGuard backend.' : 'Demo only: this changes a sample record in your browser session.'}
+        description={isLive ? 'This is saved to your AMANA Guard backend.' : 'Demo only: this changes a sample record in your browser session.'}
         confirmLabel={pausing ? 'Pause agent' : 'Resume agent'}
       >
         <p className="text-sm text-ink-muted">
@@ -309,7 +309,7 @@ export default function AgentDetailPage() {
         onConfirm={removeRecipient}
         danger
         title="Remove recipient?"
-        description={isLive ? 'This is saved to your SpendGuard backend.' : 'Demo only.'}
+        description={isLive ? 'This is saved to your AMANA Guard backend.' : 'Demo only.'}
         confirmLabel="Remove"
       >
         <p className="text-sm text-ink-muted">

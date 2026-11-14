@@ -1,5 +1,5 @@
 // Copy and routes for the marketing landing page (pure data, unit-tested).
-// Only describe what SpendGuard AI actually does; no unverifiable claims.
+// Only describe what AMANA Guard actually does; no unverifiable claims.
 
 export const LANDING_ROUTE = '/';
 // The F2 dashboard Overview page lives at /overview; the landing page is the app root.
@@ -8,7 +8,7 @@ export const DASHBOARD_ROUTE = '/overview';
 export const HERO = {
   title: 'Secure every payment made by your AI agents.',
   subtitle:
-    'SpendGuard AI sits between your agents and your money. Every payment request is checked against your rules, approved by you when needed, and verified on NEAR Testnet.',
+    'AMANA Guard sits between your agents and your money. Every payment request is checked against your rules, approved by you when needed, and verified on NEAR Testnet.',
   cta: 'Open Live Demo',
 };
 
@@ -64,7 +64,7 @@ export const PREVIEW_NOTE =
   'This preview is the real dashboard running on clearly labelled sample data.';
 
 export const FAQ = [
-  { q: 'Is this real money?', a: 'No. SpendGuard AI runs on NEAR Testnet, and the demo uses sample data.' },
+  { q: 'Is this real money?', a: 'No. AMANA Guard runs on NEAR Testnet, and the demo uses sample data.' },
   { q: 'Can an agent pay without my approval?', a: 'Requests over your approval threshold wait for you to approve or reject them. Your limits apply to every request.' },
   { q: 'Do I need a wallet to try it?', a: 'Not for the demo, which runs on sample data in your browser. Payments are signed in your NEAR Testnet wallet.' },
   { q: 'What does the demo show?', a: 'Clearly labelled sample agents, requests and audit entries. Nothing leaves your browser in demo mode.' },

@@ -52,7 +52,7 @@ function DecisionForm({ request, decision, onClose }) {
       open
       onClose={onClose}
       title={approve ? 'Approve this payment?' : 'Reject this payment?'}
-      description={isLive ? 'This records your decision on the SpendGuard backend.' : 'Demo only: this changes a sample record in your browser session.'}
+      description={isLive ? 'This records your decision on the AMANA Guard backend.' : 'Demo only: this changes a sample record in your browser session.'}
       footer={
         <>
           <Button className="w-full sm:w-auto" onClick={onClose} disabled={busy}>Cancel</Button>

@@ -4,7 +4,7 @@
 //  - by key name: authorization, cookies, tokens, secrets, passwords, API keys
 //    and key hashes, private keys, seeds, headers, request bodies and free-text
 //    user content (purpose, comment, note) become "[REDACTED]";
-//  - by value: SpendGuard API keys, "Bearer ..." tokens, runs of 64+ hex
+//  - by value: AMANA Guard API keys, "Bearer ..." tokens, runs of 64+ hex
 //    characters (hashes) and ed25519/secp256k1 keys are masked inside strings.
 // Strings are truncated, depth and size are capped, and logging never throws.
 // Callers must still avoid passing request objects, headers or bodies.

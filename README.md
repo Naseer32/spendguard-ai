@@ -1,6 +1,10 @@
-# SpendGuard AI
+# AMANA Guard
 
-A spending-limit and approval layer for AI agents that move money on NEAR. An agent asks SpendGuard before every payment. A deterministic policy engine answers APPROVED, BLOCKED or APPROVAL_REQUIRED, and a payment only counts as executed after the backend has verified its transaction on NEAR Testnet.
+**AI payment security protocol.** Every agent payment. Accountable. Protected.
+
+*Formerly SpendGuard AI.*
+
+A spending-limit and approval layer for AI agents that move money on NEAR. An agent asks AMANA Guard before every payment. A deterministic policy engine answers APPROVED, BLOCKED or APPROVAL_REQUIRED, and a payment only counts as executed after the backend has verified its transaction on NEAR Testnet.
 
 Built for **NEAR HACKATHON**, track: **AI Security & Defense** (make AI-controlled money safer with spending limits, wallet safeguards and scam detection).
 
@@ -8,9 +12,9 @@ Built for **NEAR HACKATHON**, track: **AI Security & Defense** (make AI-controll
 
 | Path | Time | Needs | What you see |
 |---|---|---|---|
-| 1. Policy demo script | 1 minute | Node 24.15+ | A scripted agent asks for six payments; SpendGuard returns APPROVED, APPROVAL_REQUIRED or BLOCKED with reason codes, an owner approves one, and the audit log verifies. No NEAR account or keys. |
+| 1. Policy demo script | 1 minute | Node 24.15+ | A scripted agent asks for six payments; AMANA Guard returns APPROVED, APPROVAL_REQUIRED or BLOCKED with reason codes, an owner approves one, and the audit log verifies. No NEAR account or keys. |
 | 2. Dashboard | 2 minutes | A browser | https://spendguard-ai.vercel.app opens in clearly labelled demo mode with sample data: agents, limits, approvals, activity. |
-| 3. Real NEAR Testnet payment | 10 minutes | A funded testnet account | An agent asks, SpendGuard approves, the transfer is signed and sent, and the backend verifies it on-chain before marking it executed. |
+| 3. Real NEAR Testnet payment | 10 minutes | A funded testnet account | An agent asks, AMANA Guard approves, the transfer is signed and sent, and the backend verifies it on-chain before marking it executed. |
 
 **Path 1, step by step**
 
@@ -30,7 +34,7 @@ Path 3 is the "Try it" section below. Real transfers made during development are
 
 An autonomous agent that holds a key can pay anyone, any amount, as often as it likes. One bad prompt or one bug can drain the wallet.
 
-## What SpendGuard does
+## What AMANA Guard does
 
 - **Policy engine.** Per-agent daily budget, per-transaction limit, approval threshold, recipient allowlist and blocklist, and an owner pause switch. The engine is pure code: no AI, no clock, no randomness, and bad input fails closed to BLOCKED.
 - **Human approval.** Unknown recipients and large payments wait for the owner in the dashboard.
@@ -70,10 +74,10 @@ More detail in [docs/architecture.md](docs/architecture.md).
 
 This is a testnet MVP.
 
-- SpendGuard evaluates and verifies. It never stores private keys or seed phrases.
+- AMANA Guard evaluates and verifies. It never stores private keys or seed phrases.
 - In the **dashboard flow** the owner signs in their own browser wallet.
-- In the **agent demo** (`agent-demo/`) the agent process holds a testnet key and signs for itself. SpendGuard still decides first and verifies afterwards, but it does not hold that key.
-- In both modes SpendGuard cannot physically stop a key holder from sending other transfers. It detects and flags transactions that do not match an authorization. A restricted vault contract that enforces limits on-chain is future work.
+- In the **agent demo** (`agent-demo/`) the agent process holds a testnet key and signs for itself. AMANA Guard still decides first and verifies afterwards, but it does not hold that key.
+- In both modes AMANA Guard cannot physically stop a key holder from sending other transfers. It detects and flags transactions that do not match an authorization. A restricted vault contract that enforces limits on-chain is future work.
 - The tx-report endpoint is owner-only, so the agent demo also needs the owner token. Anyone holding it can also approve held payments, so do not hand it to an untrusted agent in a real deployment.
 
 ## Try it
@@ -112,7 +116,7 @@ npm start
 
 In the dashboard open **Settings > Backend connection**, leave the address empty, enter the owner token. The dashboard now shows live data instead of the demo seed.
 
-After connecting to the backend, open an agent and choose **Request a payment**. Enter a recipient, an amount and the agent's API key (used once, never stored). SpendGuard evaluates it, the request opens, and if it is APPROVED you can pay it from your connected wallet. If it needs approval, approve it first.
+After connecting to the backend, open an agent and choose **Request a payment**. Enter a recipient, an amount and the agent's API key (used once, never stored). AMANA Guard evaluates it, the request opens, and if it is APPROVED you can pay it from your connected wallet. If it needs approval, approve it first.
 
 ### 3. Run the autonomous agent on NEAR Testnet
 
@@ -172,7 +176,7 @@ Backend and frontend tests also run on every push through GitHub Actions on Node
 - Native NEAR transfers only. No fungible tokens.
 - No AI explainer yet; explanations are not generated.
 - Single owner token. No multi-user accounts.
-- See "Custody model" for what SpendGuard cannot prevent.
+- See "Custody model" for what AMANA Guard cannot prevent.
 - A review found open issues around payments reported after their window, double payment from two places, and delayed transactions. See [docs/security-review.md](docs/security-review.md). This is a testnet MVP and has not had an independent audit.
 
 ## Project layout
@@ -180,7 +184,7 @@ Backend and frontend tests also run on every push through GitHub Actions on Node
 ```
 backend/     Node API, policy engine, SQLite, NEAR verifier
 frontend/    React + Vite + Tailwind owner dashboard
-agent-demo/  Autonomous agent that pays only when SpendGuard approves
+agent-demo/  Autonomous agent that pays only when AMANA Guard approves
 docs/        Architecture
 ```
 

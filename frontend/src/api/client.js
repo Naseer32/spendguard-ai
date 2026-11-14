@@ -1,4 +1,4 @@
-// Minimal HTTP client for the SpendGuard backend.
+// Minimal HTTP client for the AMANA Guard backend.
 //
 // Contract (backend/src/app.js): every success is { data }, every failure is
 // { error: { code, message, field? }, data? }. Owner routes need

@@ -6,7 +6,7 @@ import Button from './ui/Button.jsx';
 import { TextField } from './ui/Field.jsx';
 import Modal from './ui/Modal.jsx';
 
-// Acts as the AGENT for one payment: the owner types the agent's API key, SpendGuard evaluates the request,
+// Acts as the AGENT for one payment: the owner types the agent's API key, AMANA Guard evaluates the request,
 // and the new request opens so it can be approved and paid from the wallet. The key lives in this form's
 // state only. It is cleared when the form closes and is never stored or logged.
 
@@ -45,7 +45,7 @@ function Form({ agent, onClose, onCreated }) {
       open
       onClose={onClose}
       title="Request a payment"
-      description={`Ask SpendGuard to evaluate a payment as ${agent.name}. The decision comes from your limits and recipient lists.`}
+      description={`Ask AMANA Guard to evaluate a payment as ${agent.name}. The decision comes from your limits and recipient lists.`}
       footer={
         <>
           <Button className="w-full sm:w-auto" onClick={onClose} disabled={busy}>Cancel</Button>

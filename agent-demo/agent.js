@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// SpendGuard autonomous agent demo (NEAR Testnet only).
+// AMANA Guard autonomous agent demo (NEAR Testnet only).
 //
 //   node agent.js send <amountInNEAR> <recipientAccount> ["purpose text"]
 //
@@ -409,7 +409,7 @@ export async function run({ argv, env, deps = {} }) {
     }
 
     // 1. Ask the backend.
-    log('Asking SpendGuard to evaluate the payment...');
+    log('Asking AMANA Guard to evaluate the payment...');
     const { payment, replayed } = await backend.evaluate({
       idempotencyKey: key, recipient, amount: amountYocto, ...(purpose === '' ? {} : { purpose }),
     });
@@ -442,7 +442,7 @@ export async function run({ argv, env, deps = {} }) {
       return EXIT.ERROR;
     }
     if (agent === undefined || agent.sourceAccount !== cfg.sourceAccount) {
-      log('SOURCE_ACCOUNT is not this API key\'s source account in SpendGuard. No money was sent.');
+      log('SOURCE_ACCOUNT is not this API key\'s source account in AMANA Guard. No money was sent.');
       return EXIT.ERROR;
     }
     // Convenience pre-check against the agent's limits. The backend decision stays the authority.

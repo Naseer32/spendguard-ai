@@ -1,9 +1,9 @@
-# SpendGuard AI: Architecture (v2, approved)
+# AMANA Guard: Architecture (v2, approved)
 
 ## Purpose
 
-SpendGuard AI is a security layer for funds controlled by autonomous AI agents.
-Agents ask SpendGuard to evaluate each payment. A deterministic policy engine
+AMANA Guard is a security layer for funds controlled by autonomous AI agents.
+Agents ask AMANA Guard to evaluate each payment. A deterministic policy engine
 decides; AI only explains.
 
 ## Principles
@@ -13,7 +13,7 @@ decides; AI only explains.
 - **AI never decides.** AI output is advisory text, stored separately, and
   never read by decision code. If the provider fails, a template explanation
   is used.
-- **No private keys.** SpendGuard never stores or handles private keys or seed
+- **No private keys.** AMANA Guard never stores or handles private keys or seed
   phrases. The owner signs transactions in their own wallet.
 - **No fake chain data.** A payment is EXECUTED only after its transaction
   hash is verified through NEAR RPC.
@@ -23,11 +23,11 @@ decides; AI only explains.
 
 ## Custody model (Option B, MVP)
 
-SpendGuard evaluates and authorizes payment requests. The owner signs the real
+AMANA Guard evaluates and authorizes payment requests. The owner signs the real
 NEAR Testnet transfer in their connected wallet and reports the transaction
 hash. The backend verifies it on-chain.
 
-Limitation: SpendGuard cannot physically stop an owner from sending other
+Limitation: AMANA Guard cannot physically stop an owner from sending other
 transfers. It detects and flags transactions that do not match an
 authorization. A restricted vault contract that enforces limits on-chain is a
 possible later improvement.

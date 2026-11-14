@@ -7,7 +7,7 @@ import { useStore } from '../state/DataStore.jsx';
 import { useToast } from '../state/Toasts.jsx';
 
 /**
- * Connect to a SpendGuard backend. The app starts in demo mode and stays there
+ * Connect to a AMANA Guard backend. The app starts in demo mode and stays there
  * until the backend accepts the address and owner token typed here.
  *
  * The token is a password field, is held in memory only, is cleared on
@@ -45,7 +45,7 @@ export default function ConnectionCard() {
         title="Backend connection"
         description={
           isLive
-            ? 'Showing live data from your SpendGuard backend.'
+            ? 'Showing live data from your AMANA Guard backend.'
             : 'The app is in demo mode. Connect to your backend to see real agents and payment requests.'
         }
       />

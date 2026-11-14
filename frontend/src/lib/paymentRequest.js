@@ -1,5 +1,5 @@
 // Validation for the "Request a payment" form: the owner acts as the agent, using the agent's API key,
-// to ask SpendGuard to evaluate a payment. Pure and unit-tested.
+// to ask AMANA Guard to evaluate a payment. Pure and unit-tested.
 
 import { nearToYocto } from './money.js';
 import { isValidNearAccountId } from './validation.js';

@@ -150,7 +150,7 @@ export default function LandingPage() {
         </Section>
 
         {/* 3. Solution */}
-        <Section id="solution" eyebrow="The solution" title="You set the rules. SpendGuard enforces them." lead="Every payment request passes through your policy before any money can move." tone="surface">
+        <Section id="solution" eyebrow="The solution" title="You set the rules. AMANA Guard enforces them." lead="Every payment request passes through your policy before any money can move." tone="surface">
           <FeatureGrid items={SOLUTIONS} icons={SOLUTION_ICONS} />
         </Section>
 
@@ -178,7 +178,7 @@ export default function LandingPage() {
                 <span className="h-2.5 w-2.5 rounded-full bg-warning-200" />
                 <span className="h-2.5 w-2.5 rounded-full bg-success-200" />
               </div>
-              <p className="truncate text-xs font-medium text-ink-muted">SpendGuard AI &middot; Overview</p>
+              <p className="truncate text-xs font-medium text-ink-muted">AMANA Guard &middot; Overview</p>
               <span className="rounded-md bg-warning-50 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-warning-700 ring-1 ring-inset ring-warning-200">
                 Demo
               </span>
@@ -186,7 +186,7 @@ export default function LandingPage() {
             <div
               className="relative h-[280px] overflow-hidden rounded-2xl border border-line sm:h-[440px] lg:h-[680px]"
               role="img"
-              aria-label="Preview of the SpendGuard AI dashboard overview"
+              aria-label="Preview of the AMANA Guard dashboard overview"
             >
               <div
                 inert
@@ -240,7 +240,7 @@ export default function LandingPage() {
             <div aria-hidden="true" className="absolute inset-x-0 top-0 h-48 bg-[radial-gradient(50%_100%_at_50%_0%,rgb(47_99_208/0.5),transparent)]" />
             <div className="relative">
               <h2 id="cta-title" className="text-[30px] font-semibold leading-tight tracking-[-0.03em] text-white sm:text-5xl">
-                See SpendGuard AI in action.
+                See AMANA Guard in action.
               </h2>
               <p className="mx-auto mt-4 max-w-xl text-base text-white/70 sm:text-lg">
                 Explore the dashboard on NEAR Testnet with sample data.
@@ -252,7 +252,7 @@ export default function LandingPage() {
       </main>
 
       <footer className="border-t border-line bg-white px-5 py-8 text-center text-xs text-ink-muted">
-        SpendGuard AI &middot; Built for the NEAR Hackathon &middot; Testnet only
+        AMANA Guard &middot; AI payment security protocol &middot; Formerly SpendGuard AI &middot; Built for the NEAR Hackathon &middot; Testnet only
       </footer>
     </div>
   );

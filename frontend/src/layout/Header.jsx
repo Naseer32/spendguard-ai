@@ -19,7 +19,7 @@ export default function Header() {
       <div className="flex h-14 items-center justify-between gap-3 px-4 sm:px-6 lg:h-16 lg:px-8">
         <Brand className="shrink-0 lg:hidden" />
         <p className="hidden text-sm font-medium text-ink-muted lg:block">
-          {current ? current.label : 'SpendGuard AI'}
+          {current ? current.label : 'AMANA Guard'}
         </p>
 
         <div className="flex min-w-0 items-center gap-2">

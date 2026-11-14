@@ -73,7 +73,7 @@ export default function PaymentRequestsPage() {
   return (
     <PageContainer
       title="Payment Requests"
-      description="Every payment an agent asked SpendGuard to evaluate, and what happened to it."
+      description="Every payment an agent asked AMANA Guard to evaluate, and what happened to it."
     >
       <Card aria-labelledby="requests-title" className="overflow-hidden">
         <h2 id="requests-title" className="sr-only">Payment request list</h2>
@@ -129,7 +129,7 @@ export default function PaymentRequestsPage() {
       </Card>
 
       <p className="text-xs text-ink-muted">
-        Requests are created by agents through the SpendGuard API, so there is no "new request" form here.
+        Requests are created by agents through the AMANA Guard API, so there is no "new request" form here.
       </p>
 
       <RequestDetailModal request={selected} onClose={() => setSelectedId(null)} />

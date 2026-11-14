@@ -1,7 +1,7 @@
 // DEMO DATA ONLY.
 //
 // Everything created here is an invented sample used to make the dashboard
-// usable before the backend is connected. None of it comes from the SpendGuard
+// usable before the backend is connected. None of it comes from the AMANA Guard
 // backend or from NEAR Testnet.
 //
 // - Account IDs use the reserved-looking ".example" suffix and say "demo".

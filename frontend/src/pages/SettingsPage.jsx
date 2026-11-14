@@ -53,7 +53,7 @@ export default function SettingsPage() {
             <DetailList
               items={[
                 {
-                  label: 'SpendGuard backend',
+                  label: 'AMANA Guard backend',
                   value: isLive ? (
                     <Pill tone="success">Connected: {connection.baseUrl || 'this server'}</Pill>
                   ) : (
@@ -67,7 +67,7 @@ export default function SettingsPage() {
             <div className="flex flex-wrap items-center gap-3 rounded-lg bg-surface px-4 py-3">
               <WalletIcon className="h-5 w-5 shrink-0 text-ink-muted" />
               <p className="min-w-0 flex-1 text-sm text-ink-muted">
-                Connect your NEAR Testnet wallet from the top bar. Payments are signed inside your wallet. SpendGuard never asks for,
+                Connect your NEAR Testnet wallet from the top bar. Payments are signed inside your wallet. AMANA Guard never asks for,
                 shows or stores private keys or seed phrases.
               </p>
             </div>
@@ -154,7 +154,7 @@ export default function SettingsPage() {
               items={[
                 { label: 'Application', value: APP_INFO.name },
                 { label: 'Version', value: `${APP_INFO.version} (${APP_INFO.build})` },
-                { label: 'Data source', value: isLive ? 'SpendGuard backend (live)' : APP_INFO.dataSource },
+                { label: 'Data source', value: isLive ? 'AMANA Guard backend (live)' : APP_INFO.dataSource },
                 {
                   label: 'Persistence',
                   value: isLive

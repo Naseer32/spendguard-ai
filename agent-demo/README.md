@@ -1,6 +1,6 @@
-# SpendGuard agent demo (NEAR Testnet)
+# AMANA Guard agent demo (NEAR Testnet)
 
-A small script that plays an autonomous AI agent: you give it a payment command, it asks SpendGuard first, and it only moves money if SpendGuard says APPROVED.
+A small script that plays an autonomous AI agent: you give it a payment command, it asks AMANA Guard first, and it only moves money if AMANA Guard says APPROVED.
 
 ```
 node agent.js send 0.1 sickzone9097.testnet "coffee money"
@@ -9,7 +9,7 @@ node agent.js send 0.1 sickzone9097.testnet "coffee money"
 ## Read this first
 
 - **Testnet demo only.** It refuses to run unless the network, RPC and accounts are NEAR testnet.
-- **The agent holds a testnet key.** `SOURCE_PRIVATE_KEY` lives in this script's environment. SpendGuard evaluates the request and verifies the transaction afterwards, but in this mode it does **not** custody that key and cannot physically stop the key from sending other transfers. It can only detect and flag transactions that do not match an authorization.
+- **The agent holds a testnet key.** `SOURCE_PRIVATE_KEY` lives in this script's environment. AMANA Guard evaluates the request and verifies the transaction afterwards, but in this mode it does **not** custody that key and cannot physically stop the key from sending other transfers. It can only detect and flag transactions that do not match an authorization.
 - **The dashboard's browser-wallet flow is a separate path.** There the owner signs in their own wallet. This script is the agent-signs-itself path.
 - **The report step needs the owner token.** The backend's `tx-report` endpoint is owner-only; the agent API key cannot call it. So this script needs `OWNER_TOKEN` as well. The script only uses it for that one call, plus a read of the agent's limits, but anyone who holds the owner token can also approve held payments in the backend. For a real deployment, do not give the agent process the owner token: let the owner (or a separate reporter process) report the hash. For the demo, run it on your own machine.
 
@@ -24,7 +24,7 @@ If the decision is APPROVAL_REQUIRED or BLOCKED, it prints the reason codes and 
 
 ## Setup
 
-Requires Node 24.15 or newer and a running SpendGuard backend (see `../backend`).
+Requires Node 24.15 or newer and a running AMANA Guard backend (see `../backend`).
 
 ```
 cd agent-demo
@@ -36,10 +36,10 @@ Secrets are read from environment variables only. They are never accepted as com
 
 | Variable | Purpose |
 |---|---|
-| `BACKEND_URL` | SpendGuard backend, for example `http://127.0.0.1:3000` |
+| `BACKEND_URL` | AMANA Guard backend, for example `http://127.0.0.1:3000` |
 | `AGENT_API_KEY` | The agent's API key (`sgk_...`) |
 | `OWNER_TOKEN` | Backend owner token, used for the tx-report call (see warning above) |
-| `SOURCE_ACCOUNT` | The agent's NEAR testnet account. Must equal the agent's source account in SpendGuard |
+| `SOURCE_ACCOUNT` | The agent's NEAR testnet account. Must equal the agent's source account in AMANA Guard |
 | `SOURCE_PRIVATE_KEY` | Testnet secret key for that account (`ed25519:...`) |
 | `NEAR_NETWORK`, `NEAR_RPC_URL` | Optional. Anything other than testnet is refused |
 | `PAYMENT_SALT` | Optional. Change it to deliberately make a new payment with an identical command |
@@ -64,7 +64,7 @@ Exit codes: `0` verified by the backend, `1` error or backend refusal, `2` not a
 
 ## Exactly-once
 
-- The idempotency key is derived from the command (source account, recipient, exact yocto amount, purpose, optional salt), so the same command always maps to the same SpendGuard request.
+- The idempotency key is derived from the command (source account, recipient, exact yocto amount, purpose, optional salt), so the same command always maps to the same AMANA Guard request.
 - Before sending, the script records an intent in the local state file; right after sending it records the transaction hash. On a re-run it only retries the report for an already-sent transaction. If a previous run crashed after starting a send but before recording a hash, it refuses to send again and tells you to check the account history.
 - The state file holds only public data (hash, accounts, request id) and lives outside the repository.
 - NEAR amounts are converted to yocto with exact integer math, no floating point.

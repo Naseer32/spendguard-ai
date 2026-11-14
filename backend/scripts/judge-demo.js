@@ -1,4 +1,4 @@
-// Zero-setup demo of the SpendGuard policy flow. No NEAR account, no wallet, no keys, no network.
+// Zero-setup demo of the AMANA Guard policy flow. No NEAR account, no wallet, no keys, no network.
 //
 //   cd backend && npm install && npm run demo
 //
@@ -56,7 +56,7 @@ try {
   await waitForServer();
   const owner = (m, p, b) => call(m, p, OWNER, b);
 
-  line('SpendGuard policy demo (nothing is paid, no NEAR account needed)');
+  line('AMANA Guard policy demo (nothing is paid, no NEAR account needed)');
   line('');
   const { agent, apiKey } = await owner('POST', '/api/agents', {
     name: 'demo-agent',

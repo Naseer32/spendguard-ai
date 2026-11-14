@@ -1,9 +1,9 @@
 {
-  "name": "spendguard-frontend",
+  "name": "amana-guard-frontend",
   "version": "0.3.0",
   "private": true,
   "type": "module",
-  "description": "SpendGuard AI owner dashboard (React + Vite + Tailwind CSS)",
+  "description": "AMANA Guard owner dashboard (React + Vite + Tailwind CSS)",
   "engines": {
     "node": ">=20.19.0"
   },

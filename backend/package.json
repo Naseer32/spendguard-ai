@@ -1,9 +1,9 @@
 {
-  "name": "spendguard-backend",
+  "name": "amana-guard-backend",
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "SpendGuard AI backend: deterministic spending policy engine for autonomous agents on NEAR",
+  "description": "AMANA Guard backend: deterministic spending policy engine for autonomous agents on NEAR",
   "engines": {
     "node": ">=24.15.0"
   },

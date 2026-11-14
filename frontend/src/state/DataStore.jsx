@@ -11,7 +11,7 @@ import { loadLatestAudit, loadOlderAudit, loadSnapshot, mergeAudit, upsertById, 
 // DATA STORE. One seam for every page. Two modes:
 //
 //   demo  (default)  in-memory sample data, clearly labelled. Nothing leaves the browser.
-//   live             real data from the SpendGuard backend, using only its existing
+//   live             real data from the AMANA Guard backend, using only its existing
 //                    /api routes (see api/endpoints.js).
 //
 // The app always starts in demo mode. Live mode begins only after the owner types a

@@ -1,4 +1,4 @@
-// Stage 3b-2: does a NEAR transaction match what SpendGuard authorized?
+// Stage 3b-2: does a NEAR transaction match what AMANA Guard authorized?
 //
 // Pure: no I/O, no clock, no randomness. Never throws; anything unexpected
 // fails closed. Input is the `result` of a NEAR RPC `tx` call plus the

@@ -167,7 +167,7 @@ export default function OverviewPage() {
       </div>
 
       <p className="px-1 text-xs leading-relaxed text-ink-muted">
-        Nothing on this page is a real payment or transaction. SpendGuard never shows transaction hashes until
+        Nothing on this page is a real payment or transaction. AMANA Guard never shows transaction hashes until
         they are verified on-chain.
       </p>
     </PageContainer>

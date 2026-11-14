@@ -19,7 +19,7 @@ A read-only review of the backend, dashboard and agent demo, followed by fixes f
 | Medium | A payment sent after its authorization window expires (or after the request was cancelled) cannot be reported, and its daily budget has already been released. |
 | Medium | A transaction not found for 30 minutes is marked FAILED and releases its budget, but a delayed transaction can still land afterwards. |
 | Medium | Nothing on the server stops the same APPROVED request from being paid twice from two places (two tabs, or the dashboard and the agent demo). The one-send guard is per browser tab. |
-| Medium | The agent demo holds the owner token and a testnet key, so a compromised agent process could bypass SpendGuard. It is a demo, not a security boundary. |
+| Medium | The agent demo holds the owner token and a testnet key, so a compromised agent process could bypass AMANA Guard. It is a demo, not a security boundary. |
 | Medium | The failed-login lockout is keyed by client IP, so behind a shared proxy one bad client can lock out the owner. |
 | Low | Re-verification of stuck SUBMITTED requests can starve newer ones. |
 | Low | A transaction is matched to a request by signer, recipient, amount and time, so an identical earlier transfer could be reported as the payment. Only the owner can report. |

@@ -47,7 +47,7 @@ export default function RequestDetailModal({ request: requestProp, onClose }) {
       onClose={onClose}
       size="lg"
       title={open ? `Request ${request.id}` : ''}
-      description={isLive ? 'Payment request from your SpendGuard backend.' : 'Demo record: sample data, not a real payment.'}
+      description={isLive ? 'Payment request from your AMANA Guard backend.' : 'Demo record: sample data, not a real payment.'}
       footer={
         open ? (
           <>

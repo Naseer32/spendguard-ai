@@ -1,10 +1,10 @@
-# SpendGuard AI frontend
+# AMANA Guard frontend
 
 React + Vite + Tailwind CSS (v4) owner dashboard.
 
 **Status:** all six sections are built. The app starts in **demo mode** (clearly
 labelled sample data held in memory, nothing leaves the browser). In
-**Settings > Backend connection** you can connect it to the SpendGuard backend's
+**Settings > Backend connection** you can connect it to the AMANA Guard backend's
 existing `/api` routes and see live data. There is no wallet connection and no
 payment signing: approving a payment records your decision only.
 

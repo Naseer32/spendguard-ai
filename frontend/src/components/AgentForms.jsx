@@ -118,7 +118,7 @@ function NewAgentForm({ onClose }) {
       title="New agent"
       description={
         isLive
-          ? 'Creates a real agent on your SpendGuard backend.'
+          ? 'Creates a real agent on your AMANA Guard backend.'
           : 'Demo only: this adds a sample agent in your browser session.'
       }
       footer={
