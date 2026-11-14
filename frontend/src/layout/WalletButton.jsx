@@ -17,7 +17,7 @@ export default function WalletButton() {
         aria-label={`Disconnect NEAR testnet wallet ${accountId}`}
       >
         <WalletIcon className="h-4 w-4" />
-        <span className="max-w-[9rem] truncate font-mono text-xs sm:max-w-[14rem] sm:text-sm">{accountId}</span>
+        <span className="max-w-[5rem] truncate font-mono text-xs sm:max-w-[14rem] sm:text-sm">{accountId}</span>
         <span className="hidden sm:inline">· Disconnect</span>
       </Button>
     );

@@ -17,13 +17,13 @@ export default function Header() {
   return (
     <header className="sticky top-0 z-30 border-b border-line bg-white/90 pt-[env(safe-area-inset-top)] shadow-[0_1px_0_rgb(11_31_58/0.02)] backdrop-blur-md">
       <div className="flex h-14 items-center justify-between gap-3 px-4 sm:px-6 lg:h-16 lg:px-8">
-        <Brand className="lg:hidden" />
+        <Brand className="shrink-0 lg:hidden" />
         <p className="hidden text-sm font-medium text-ink-muted lg:block">
           {current ? current.label : 'SpendGuard AI'}
         </p>
 
-        <div className="flex items-center gap-2">
-          <NetworkStatus />
+        <div className="flex min-w-0 items-center gap-2">
+          <div className="hidden sm:block"><NetworkStatus /></div>
           <WalletButton />
           <Link
             to="/settings"
@@ -38,7 +38,7 @@ export default function Header() {
       {isLive ? (
         <div
           role="status"
-          className="border-t border-success-200 bg-success-50 px-4 py-1.5 text-center text-[11px] font-medium leading-snug text-success-700 sm:text-xs sm:px-6 lg:px-8"
+          className="border-t border-success-200 bg-success-50 px-4 py-1.5 text-center text-[11px] font-medium break-words leading-snug text-success-700 sm:text-xs sm:px-6 lg:px-8"
         >
           Live: connected to {connection.baseUrl || 'this server'}. Payments are signed in your NEAR Testnet wallet and verified by the backend.
         </div>

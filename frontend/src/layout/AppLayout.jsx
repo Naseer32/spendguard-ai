@@ -32,7 +32,7 @@ export default function AppLayout() {
 
       <Sidebar />
 
-      <div className="flex min-h-dvh flex-col lg:pl-64">
+      <div className="flex min-h-dvh flex-col overflow-x-clip lg:pl-64">
         <Header />
         <PreviewNotice />
         {/* Bottom padding keeps content clear of the mobile tab bar. */}

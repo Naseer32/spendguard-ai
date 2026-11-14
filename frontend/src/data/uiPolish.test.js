@@ -70,3 +70,12 @@ test('overview keeps its demo labelling after the visual redesign', () => {
   assert.match(read('../components/ui/DemoBanner.jsx'), /Demo data\./);
   assert.match(read('../layout/AppLayout.jsx'), /linear-gradient\(to_bottom/);
 });
+
+test('header cannot grow wider than a phone screen when a wallet is connected', () => {
+  const h = read('../layout/Header.jsx');
+  assert.match(h, /flex min-w-0 items-center gap-2/);
+  assert.match(h, /shrink-0 lg:hidden/);
+  assert.match(h, /break-words/);
+  assert.match(read('../layout/WalletButton.jsx'), /max-w-\[5rem\] truncate/);
+  assert.match(read('../layout/AppLayout.jsx'), /overflow-x-clip/);
+});
