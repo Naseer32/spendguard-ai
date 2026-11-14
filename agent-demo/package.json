@@ -1,0 +1,17 @@
+{
+  "name": "spendguard-agent-demo",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Testnet demo: an autonomous agent that asks SpendGuard before it pays on NEAR",
+  "engines": {
+    "node": ">=24.15.0"
+  },
+  "scripts": {
+    "start": "node --env-file-if-exists=.env agent.js",
+    "test": "node --test \"*.test.js\""
+  },
+  "dependencies": {
+    "near-api-js": "^7.5.3"
+  }
+}
